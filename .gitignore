@@ -1,0 +1,5 @@
+node_modules/
+dist/
+plans/
+.claude/settings.local.json
+docs/_research/
