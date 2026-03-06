@@ -9,15 +9,8 @@ interface StatusBarProps {
   loading: boolean;
 }
 
-export function StatusBar({
-  mode,
-  lastUpdated,
-  filterRepos,
-  loading,
-}: StatusBarProps) {
-  const timeStr = lastUpdated
-    ? lastUpdated.toLocaleTimeString()
-    : "-";
+export function StatusBar({ mode, lastUpdated, filterRepos, loading }: StatusBarProps) {
+  const timeStr = lastUpdated ? lastUpdated.toLocaleTimeString() : "-";
 
   return (
     <Box flexDirection="column" borderTop borderStyle="single" paddingX={1}>
@@ -30,9 +23,7 @@ export function StatusBar({
             ? "↑↓/jk move  Space toggle  ⏎ apply  Esc cancel"
             : "↑↓/jk move  ⏎ open  Tab switch  f filter  r refresh  q quit"}
         </Text>
-        <Text color="gray">
-          {loading ? "Loading..." : `Updated: ${timeStr}`}
-        </Text>
+        <Text color="gray">{loading ? "Loading..." : `Updated: ${timeStr}`}</Text>
       </Box>
     </Box>
   );

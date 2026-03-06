@@ -20,8 +20,9 @@ export function App({ config }: AppProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterCursorIndex, setFilterCursorIndex] = useState(0);
 
-  const { createdPRs, reviewRequestedPRs, loading, error, lastUpdated, refresh } =
-    usePRs(config.pollInterval);
+  const { createdPRs, reviewRequestedPRs, loading, error, lastUpdated, refresh } = usePRs(
+    config.pollInterval,
+  );
 
   const repoFilter = useRepoFilter(createdPRs, reviewRequestedPRs);
 
@@ -34,9 +35,7 @@ export function App({ config }: AppProps) {
   const filteredReviewCount = repoFilter.filterPRs(reviewRequestedPRs).length;
 
   const switchTab = useCallback(() => {
-    setActiveTab((prev) =>
-      prev === "created" ? "reviewRequested" : "created"
-    );
+    setActiveTab((prev) => (prev === "created" ? "reviewRequested" : "created"));
     setSelectedIndex(0);
   }, []);
 
@@ -97,9 +96,7 @@ export function App({ config }: AppProps) {
     );
   }
 
-  const filterRepoNames = repoFilter.isFiltering
-    ? [...repoFilter.selectedRepos]
-    : [];
+  const filterRepoNames = repoFilter.isFiltering ? [...repoFilter.selectedRepos] : [];
 
   return (
     <Box flexDirection="column">
@@ -116,11 +113,7 @@ export function App({ config }: AppProps) {
           cursorIndex={filterCursorIndex}
         />
       ) : (
-        <PRList
-          prs={currentPRs}
-          selectedIndex={selectedIndex}
-          columns={config.columns}
-        />
+        <PRList prs={currentPRs} selectedIndex={selectedIndex} columns={config.columns} />
       )}
 
       <StatusBar

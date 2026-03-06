@@ -103,12 +103,8 @@ export function PRRow({ pr, isSelected, columns }: PRRowProps) {
 
   return (
     <Box>
-      <Text color={isSelected ? "blue" : undefined}>
-        {isSelected ? ">" : " "}{" "}
-      </Text>
-      <Box gap={1}>
-        {columns.map((col) => columnRenderers[col])}
-      </Box>
+      <Text color={isSelected ? "blue" : undefined}>{isSelected ? ">" : " "} </Text>
+      <Box gap={1}>{columns.map((col) => columnRenderers[col])}</Box>
     </Box>
   );
 }

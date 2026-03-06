@@ -15,7 +15,7 @@ export function getGitHubToken(): string {
   } catch {
     throw new Error(
       "Failed to get GitHub token. Make sure gh CLI is installed and you are logged in.\n" +
-        "Run: gh auth login"
+        "Run: gh auth login",
     );
   }
 }

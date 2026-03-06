@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { PullRequest, TabType } from "../types.js";
+import type { PullRequest } from "../types.js";
 import { createGitHubClient } from "../lib/github.js";
 import { getGitHubToken } from "../lib/auth.js";
 
@@ -14,9 +14,7 @@ interface UsePRsResult {
 
 export function usePRs(pollInterval: number): UsePRsResult {
   const [createdPRs, setCreatedPRs] = useState<PullRequest[]>([]);
-  const [reviewRequestedPRs, setReviewRequestedPRs] = useState<PullRequest[]>(
-    []
-  );
+  const [reviewRequestedPRs, setReviewRequestedPRs] = useState<PullRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);

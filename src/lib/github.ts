@@ -102,9 +102,7 @@ export function createGitHubClient(token: string) {
     },
 
     async fetchReviewRequestedPRs(): Promise<PullRequest[]> {
-      return fetchAllPages(
-        "review-requested:@me is:pr is:open sort:updated-desc"
-      );
+      return fetchAllPages("review-requested:@me is:pr is:open sort:updated-desc");
     },
   };
 }

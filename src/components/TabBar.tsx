@@ -8,11 +8,7 @@ interface TabBarProps {
   reviewRequestedCount: number;
 }
 
-export function TabBar({
-  activeTab,
-  createdCount,
-  reviewRequestedCount,
-}: TabBarProps) {
+export function TabBar({ activeTab, createdCount, reviewRequestedCount }: TabBarProps) {
   return (
     <Box gap={2} paddingX={1} paddingY={1}>
       <Text

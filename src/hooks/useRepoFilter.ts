@@ -13,7 +13,7 @@ interface UseRepoFilterResult {
 
 export function useRepoFilter(
   createdPRs: PullRequest[],
-  reviewRequestedPRs: PullRequest[]
+  reviewRequestedPRs: PullRequest[],
 ): UseRepoFilterResult {
   const allRepos = useMemo(() => {
     const repos = new Set<string>();
@@ -50,11 +50,9 @@ export function useRepoFilter(
   const filterPRs = useCallback(
     (prs: PullRequest[]): PullRequest[] => {
       if (!isFiltering) return prs;
-      return prs.filter((pr) =>
-        selectedRepos.has(pr.repository.nameWithOwner)
-      );
+      return prs.filter((pr) => selectedRepos.has(pr.repository.nameWithOwner));
     },
-    [isFiltering, selectedRepos]
+    [isFiltering, selectedRepos],
   );
 
   return {

@@ -37,13 +37,7 @@ export interface PullRequest {
 
 export type TabType = "created" | "reviewRequested";
 
-export type ColumnKey =
-  | "repo"
-  | "title"
-  | "ci"
-  | "reviews"
-  | "labels"
-  | "updatedAt";
+export type ColumnKey = "repo" | "title" | "ci" | "reviews" | "labels" | "updatedAt";
 
 export interface AppConfig {
   columns: ColumnKey[];
