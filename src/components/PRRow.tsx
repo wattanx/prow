@@ -28,16 +28,18 @@ function formatRelativeTime(dateStr: string): string {
 
 export function PRRow({ pr, isSelected, kind }: PRRowProps) {
   return (
-    <Box>
-      <Text color={isSelected ? "blue" : undefined}>{isSelected ? ">" : " "} </Text>
+    <Box inverse={isSelected}>
+      <Text>{isSelected ? "> " : "  "}</Text>
       <Box flexGrow={1}>
         <Text wrap="truncate">{pr.title}</Text>
       </Box>
       <Box width={5} justifyContent="flex-end">
-        <Text color="gray">{formatRelativeTime(pr.updatedAt)}</Text>
+        <Text color={isSelected ? undefined : "gray"}>{formatRelativeTime(pr.updatedAt)}</Text>
       </Box>
       <Box width={16} justifyContent="flex-end">
-        <Text color={kind === "authored draft" ? "yellow" : "gray"}>{kind}</Text>
+        <Text color={isSelected ? undefined : kind === "authored draft" ? "yellow" : "gray"}>
+          {kind}
+        </Text>
       </Box>
     </Box>
   );

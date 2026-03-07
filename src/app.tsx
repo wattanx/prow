@@ -102,10 +102,14 @@ export function App({ config }: AppProps) {
       if (selectedPR) {
         openInBrowser(selectedPR.url);
       }
-    } else if (key.tab && key.shift) {
+    } else if (input === "h" || (key.tab && key.shift)) {
       switchSection(-1);
-    } else if (key.tab) {
+    } else if (input === "l" || key.tab) {
       switchSection(1);
+    } else if (input === "g") {
+      setSelectedIndex(0);
+    } else if (input === "G") {
+      setSelectedIndex(Math.max(0, currentPRs.length - 1));
     } else if (input === "s") {
       setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
     } else if (input === "f") {
