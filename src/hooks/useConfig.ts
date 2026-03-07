@@ -2,9 +2,8 @@ import Conf from "conf";
 import type { AppConfig } from "../types.js";
 
 const defaults: AppConfig = {
-  columns: ["repo", "title", "ci", "reviews", "labels", "updatedAt"],
   pollInterval: 60,
-  defaultTab: "created",
+  defaultSection: "mine",
 };
 
 let store: Conf<AppConfig> | null = null;
@@ -22,8 +21,7 @@ function getStore(): Conf<AppConfig> {
 export function loadConfig(): AppConfig {
   const s = getStore();
   return {
-    columns: s.get("columns"),
     pollInterval: s.get("pollInterval"),
-    defaultTab: s.get("defaultTab"),
+    defaultSection: s.get("defaultSection"),
   };
 }

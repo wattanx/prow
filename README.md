@@ -2,30 +2,41 @@
 
 A TUI application for managing GitHub Pull Requests.
 
-Browse PRs across multiple repositories, switch between created and review-requested views, and open them in your browser.
+Quickly triage review requests and authored PRs across multiple repositories without leaving the terminal.
 
 ## Features
 
-- Tab switching between your created PRs and review-requested PRs
-- Cross-repository PR listing
-- CI status, review state, labels, and update time at a glance
+- 4 sections for focused PR triage
+- PRs grouped by repository for easy scanning
+- Sort by newest or oldest
 - Repository filtering
 - Auto-polling for live updates
 - Vim keybindings + arrow key support
 
 ```
-┌───────────────────────────────────────────────────┐
-│  [Created (3)]  [Review Requested (2)]            │
-│───────────────────────────────────────────────────│
-│  Repo          Title              CI  Rev  Age    │
-│───────────────────────────────────────────────────│
-│> owner/repo-a  fix: login bug     ✓   2/3  2h    │
-│  owner/repo-b  feat: new api      ✗   0/1  1d    │
-│  owner/repo-a  chore: update deps ✓   1/1  3d    │
-│───────────────────────────────────────────────────│
-│  ↑↓/jk move  ⏎ open  Tab switch  f filter  q quit│
-└───────────────────────────────────────────────────┘
+ Mine 4 | Authored 3 | New 1 | Stale 2                Updated 13:24
+─────────────────────────────────────────────────────────────────────
+           │
+  > new (1)│  org/repo-a
+    stale(2)│    Fix cache invalidation              2h   mine
+    mine (4)│    Refactor auth flow                   1d   mine
+    authored│
+         (3)│  org/repo-b
+           │  > Improve loading state               5h   mine
+           │    Add error boundary                  3d   mine
+           │
+─────────────────────────────────────────────────────────────────────
+ j/↓ k/↑ move  tab section  ⏎ open  r refresh  s sort  f filter  q quit
 ```
+
+## Sections
+
+| Section      | Description                                                              |
+| ------------ | ------------------------------------------------------------------------ |
+| **new**      | Review requests with no reviews yet and updated within the last 48 hours |
+| **stale**    | Review requests that have not been updated for more than 48 hours        |
+| **mine**     | All PRs where your review is requested (includes both new and stale)     |
+| **authored** | All open PRs you created                                                 |
 
 ## Prerequisites
 
@@ -60,25 +71,26 @@ prow --version  # Show version
 
 ## Keybindings
 
-| Key | Action |
-| --- | --- |
-| `j` / `↓` | Move cursor down |
-| `k` / `↑` | Move cursor up |
-| `Enter` | Open PR in browser |
-| `Tab` | Switch tab (Created / Review Requested) |
-| `f` | Open repository filter |
-| `r` | Refresh data |
-| `q` | Quit |
+| Key       | Action                                         |
+| --------- | ---------------------------------------------- |
+| `j` / `↓` | Move cursor down                               |
+| `k` / `↑` | Move cursor up                                 |
+| `Enter`   | Open PR in browser                             |
+| `Tab`     | Switch section (new / stale / mine / authored) |
+| `s`       | Toggle sort (newest / oldest)                  |
+| `f`       | Open repository filter                         |
+| `r`       | Refresh data                                   |
+| `q`       | Quit                                           |
 
 ### Filter mode
 
-| Key | Action |
-| --- | --- |
-| `j` / `↓` | Move cursor down |
-| `k` / `↑` | Move cursor up |
-| `Space` | Toggle repository selection |
-| `Enter` | Apply filter |
-| `Esc` | Cancel |
+| Key       | Action                      |
+| --------- | --------------------------- |
+| `j` / `↓` | Move cursor down            |
+| `k` / `↑` | Move cursor up              |
+| `Space`   | Toggle repository selection |
+| `Enter`   | Apply filter                |
+| `Esc`     | Cancel                      |
 
 ## Configuration
 
@@ -86,22 +98,20 @@ Configuration is stored at `~/.config/prow/config.json` (auto-created on first l
 
 ```json
 {
-  "columns": ["repo", "title", "ci", "reviews", "labels", "updatedAt"],
   "pollInterval": 60,
-  "defaultTab": "created"
+  "defaultSection": "mine"
 }
 ```
 
-| Key | Description | Default |
-| --- | --- | --- |
-| `columns` | Columns to display | `["repo", "title", "ci", "reviews", "labels", "updatedAt"]` |
-| `pollInterval` | Auto-refresh interval in seconds | `60` |
-| `defaultTab` | Initial tab (`created` / `reviewRequested`) | `"created"` |
+| Key              | Description                                             | Default  |
+| ---------------- | ------------------------------------------------------- | -------- |
+| `pollInterval`   | Auto-refresh interval in seconds                        | `60`     |
+| `defaultSection` | Initial section (`new` / `stale` / `mine` / `authored`) | `"mine"` |
 
 ## Tech Stack
 
 - [Ink](https://github.com/vadimdemedes/ink) - React for CLI
-- [Octokit GraphQL](https://github.com/octokit/graphql.js) - GitHub GraphQL API
+- [GitHub CLI](https://cli.github.com/) - GitHub API via `gh api graphql`
 - [Conf](https://github.com/sindresorhus/conf) - Configuration management
 - [tsdown](https://github.com/rolldown/tsdown) - Build tool
 

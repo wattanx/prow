@@ -18,7 +18,8 @@ Keybindings:
   j/↓     Move down
   k/↑     Move up
   Enter   Open PR in browser
-  Tab     Switch tab (Created / Review Requested)
+  Tab     Switch section (new / stale / mine / authored)
+  s       Toggle sort (newest / oldest)
   f       Filter by repository
   r       Refresh
   q       Quit

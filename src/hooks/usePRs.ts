@@ -1,15 +1,41 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { PullRequest } from "../types.js";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { PullRequest, SectionType } from "../types.js";
 import { createGitHubClient } from "../lib/github.js";
-import { getGitHubToken } from "../lib/auth.js";
+
+const STALE_THRESHOLD_MS = 48 * 60 * 60 * 1000; // 48 hours
+
+interface SectionCounts {
+  new: number;
+  stale: number;
+  mine: number;
+  authored: number;
+}
 
 interface UsePRsResult {
   createdPRs: PullRequest[];
   reviewRequestedPRs: PullRequest[];
+  sectionPRs: (section: SectionType) => PullRequest[];
+  sectionCounts: SectionCounts;
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
   refresh: () => void;
+}
+
+function classifyNew(prs: PullRequest[]): PullRequest[] {
+  return prs.filter((pr) => {
+    const hasNoReviews = pr.reviews.totalCount === 0;
+    const age = Date.now() - new Date(pr.updatedAt).getTime();
+    const isRecent = age < STALE_THRESHOLD_MS;
+    return hasNoReviews && isRecent;
+  });
+}
+
+function classifyStale(prs: PullRequest[]): PullRequest[] {
+  return prs.filter((pr) => {
+    const age = Date.now() - new Date(pr.updatedAt).getTime();
+    return age >= STALE_THRESHOLD_MS;
+  });
 }
 
 export function usePRs(pollInterval: number): UsePRsResult {
@@ -23,8 +49,7 @@ export function usePRs(pollInterval: number): UsePRsResult {
   const fetchData = useCallback(async () => {
     try {
       if (!clientRef.current) {
-        const token = getGitHubToken();
-        clientRef.current = createGitHubClient(token);
+        clientRef.current = createGitHubClient();
       }
 
       setLoading(true);
@@ -56,9 +81,40 @@ export function usePRs(pollInterval: number): UsePRsResult {
     return () => clearInterval(interval);
   }, [fetchData, pollInterval]);
 
+  const newPRs = useMemo(() => classifyNew(reviewRequestedPRs), [reviewRequestedPRs]);
+  const stalePRs = useMemo(() => classifyStale(reviewRequestedPRs), [reviewRequestedPRs]);
+
+  const sectionCounts: SectionCounts = useMemo(
+    () => ({
+      new: newPRs.length,
+      stale: stalePRs.length,
+      mine: reviewRequestedPRs.length,
+      authored: createdPRs.length,
+    }),
+    [newPRs, stalePRs, reviewRequestedPRs, createdPRs],
+  );
+
+  const sectionPRs = useCallback(
+    (section: SectionType): PullRequest[] => {
+      switch (section) {
+        case "new":
+          return newPRs;
+        case "stale":
+          return stalePRs;
+        case "mine":
+          return reviewRequestedPRs;
+        case "authored":
+          return createdPRs;
+      }
+    },
+    [newPRs, stalePRs, reviewRequestedPRs, createdPRs],
+  );
+
   return {
     createdPRs,
     reviewRequestedPRs,
+    sectionPRs,
+    sectionCounts,
     loading,
     error,
     lastUpdated,

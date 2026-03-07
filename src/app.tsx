@@ -1,47 +1,76 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Box, Text, useApp, useInput } from "ink";
-import type { TabType, AppMode, AppConfig } from "./types.js";
+import type { SectionType, AppConfig, SortOrder } from "./types.js";
 import { usePRs } from "./hooks/usePRs.js";
 import { useRepoFilter } from "./hooks/useRepoFilter.js";
-import { TabBar } from "./components/TabBar.js";
+import { SummaryBar } from "./components/SummaryBar.js";
+import { SectionList, SECTIONS } from "./components/SectionList.js";
 import { PRList } from "./components/PRList.js";
 import { RepoFilter } from "./components/RepoFilter.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { openInBrowser } from "./lib/browser.js";
+import type { AppMode } from "./types.js";
 
 interface AppProps {
   config: AppConfig;
 }
 
+const EMPTY_MESSAGES: Record<SectionType, string> = {
+  new: "No new review requests",
+  stale: "No stale review requests",
+  mine: "No review requests",
+  authored: "No authored pull requests",
+};
+
 export function App({ config }: AppProps) {
   const { exit } = useApp();
-  const [activeTab, setActiveTab] = useState<TabType>(config.defaultTab);
+  const [activeSection, setActiveSection] = useState<SectionType>(config.defaultSection);
   const [mode, setMode] = useState<AppMode>("list");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterCursorIndex, setFilterCursorIndex] = useState(0);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  const { createdPRs, reviewRequestedPRs, loading, error, lastUpdated, refresh } = usePRs(
-    config.pollInterval,
-  );
+  const {
+    createdPRs,
+    reviewRequestedPRs,
+    sectionPRs,
+    sectionCounts,
+    loading,
+    error,
+    lastUpdated,
+    refresh,
+  } = usePRs(config.pollInterval);
 
   const repoFilter = useRepoFilter(createdPRs, reviewRequestedPRs);
 
-  const currentPRs =
-    activeTab === "created"
-      ? repoFilter.filterPRs(createdPRs)
-      : repoFilter.filterPRs(reviewRequestedPRs);
+  const currentPRs = useMemo(() => {
+    const prs = sectionPRs(activeSection);
+    const filtered = repoFilter.isFiltering
+      ? prs.filter((pr) => repoFilter.selectedRepos.has(pr.repository.nameWithOwner))
+      : prs;
 
-  const filteredCreatedCount = repoFilter.filterPRs(createdPRs).length;
-  const filteredReviewCount = repoFilter.filterPRs(reviewRequestedPRs).length;
+    const sorted = [...filtered];
+    if (sortOrder === "oldest") {
+      sorted.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+    } else {
+      sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    }
+    return sorted;
+  }, [activeSection, sectionPRs, repoFilter.isFiltering, repoFilter.selectedRepos, sortOrder]);
 
-  const switchTab = useCallback(() => {
-    setActiveTab((prev) => (prev === "created" ? "reviewRequested" : "created"));
+  const selectedPR = currentPRs[selectedIndex] ?? null;
+
+  const switchSection = useCallback(() => {
+    setActiveSection((prev) => {
+      const idx = SECTIONS.indexOf(prev);
+      return SECTIONS[(idx + 1) % SECTIONS.length]!;
+    });
     setSelectedIndex(0);
   }, []);
 
   useInput((input, key) => {
     if (mode === "filter") {
-      const maxIndex = repoFilter.allRepos.length; // 0 = All, 1..n = repos
+      const maxIndex = repoFilter.allRepos.length;
 
       if (input === "j" || key.downArrow) {
         setFilterCursorIndex((prev) => Math.min(prev + 1, maxIndex));
@@ -70,12 +99,13 @@ export function App({ config }: AppProps) {
     } else if (input === "k" || key.upArrow) {
       setSelectedIndex((prev) => Math.max(prev - 1, 0));
     } else if (key.return) {
-      const pr = currentPRs[selectedIndex];
-      if (pr) {
-        openInBrowser(pr.url);
+      if (selectedPR) {
+        openInBrowser(selectedPR.url);
       }
     } else if (key.tab) {
-      switchTab();
+      switchSection();
+    } else if (input === "s") {
+      setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
     } else if (input === "f") {
       if (repoFilter.allRepos.length > 0) {
         setMode("filter");
@@ -90,8 +120,9 @@ export function App({ config }: AppProps) {
     return (
       <Box flexDirection="column" padding={1}>
         <Text color="red" bold>
-          Error: {error}
+          Failed to fetch pull requests
         </Text>
+        <Text color="gray">Press "r" to retry</Text>
       </Box>
     );
   }
@@ -100,28 +131,35 @@ export function App({ config }: AppProps) {
 
   return (
     <Box flexDirection="column">
-      <TabBar
-        activeTab={activeTab}
-        createdCount={filteredCreatedCount}
-        reviewRequestedCount={filteredReviewCount}
-      />
-
-      {mode === "filter" ? (
-        <RepoFilter
-          allRepos={repoFilter.allRepos}
-          selectedRepos={repoFilter.selectedRepos}
-          cursorIndex={filterCursorIndex}
-        />
-      ) : (
-        <PRList prs={currentPRs} selectedIndex={selectedIndex} columns={config.columns} />
-      )}
-
-      <StatusBar
-        mode={mode}
+      <SummaryBar
+        mine={sectionCounts.mine}
+        authored={sectionCounts.authored}
+        newCount={sectionCounts.new}
+        stale={sectionCounts.stale}
         lastUpdated={lastUpdated}
-        filterRepos={filterRepoNames}
         loading={loading}
       />
+
+      <Box borderTop borderStyle="single">
+        <SectionList activeSection={activeSection} counts={sectionCounts} />
+
+        {mode === "filter" ? (
+          <RepoFilter
+            allRepos={repoFilter.allRepos}
+            selectedRepos={repoFilter.selectedRepos}
+            cursorIndex={filterCursorIndex}
+          />
+        ) : (
+          <PRList
+            prs={currentPRs}
+            selectedIndex={selectedIndex}
+            activeSection={activeSection}
+            emptyMessage={EMPTY_MESSAGES[activeSection]}
+          />
+        )}
+      </Box>
+
+      <StatusBar mode={mode} sortOrder={sortOrder} filterRepos={filterRepoNames} />
     </Box>
   );
 }

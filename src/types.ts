@@ -3,6 +3,7 @@ export interface PullRequest {
   url: string;
   number: number;
   state: "OPEN" | "CLOSED" | "MERGED";
+  isDraft: boolean;
   createdAt: string;
   updatedAt: string;
   repository: {
@@ -35,14 +36,15 @@ export interface PullRequest {
   };
 }
 
-export type TabType = "created" | "reviewRequested";
+export type SectionType = "new" | "stale" | "mine" | "authored";
 
-export type ColumnKey = "repo" | "title" | "ci" | "reviews" | "labels" | "updatedAt";
+export type SortOrder = "oldest" | "newest";
+
+export type PRKind = "mine" | "authored" | "authored draft";
 
 export interface AppConfig {
-  columns: ColumnKey[];
   pollInterval: number;
-  defaultTab: TabType;
+  defaultSection: SectionType;
 }
 
 export type AppMode = "list" | "filter";
