@@ -60,10 +60,10 @@ export function App({ config }: AppProps) {
 
   const selectedPR = currentPRs[selectedIndex] ?? null;
 
-  const switchSection = useCallback(() => {
+  const switchSection = useCallback((direction: 1 | -1) => {
     setActiveSection((prev) => {
       const idx = SECTIONS.indexOf(prev);
-      return SECTIONS[(idx + 1) % SECTIONS.length]!;
+      return SECTIONS[(idx + direction + SECTIONS.length) % SECTIONS.length]!;
     });
     setSelectedIndex(0);
   }, []);
@@ -102,8 +102,10 @@ export function App({ config }: AppProps) {
       if (selectedPR) {
         openInBrowser(selectedPR.url);
       }
+    } else if (key.tab && key.shift) {
+      switchSection(-1);
     } else if (key.tab) {
-      switchSection();
+      switchSection(1);
     } else if (input === "s") {
       setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
     } else if (input === "f") {
