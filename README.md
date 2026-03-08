@@ -119,7 +119,7 @@ Configuration is stored at `~/.config/prow/config.json` (auto-created on first l
 - [Ink](https://github.com/vadimdemedes/ink) - React for CLI
 - [GitHub CLI](https://cli.github.com/) - GitHub API via `gh api graphql`
 - [Conf](https://github.com/sindresorhus/conf) - Configuration management
-- [tsdown](https://github.com/rolldown/tsdown) - Build tool
+- [Bun](https://bun.sh/) - Build & runtime
 
 ## License
 
