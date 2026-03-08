@@ -5,15 +5,11 @@ import type { AppMode, SortOrder } from "../types.js";
 interface StatusBarProps {
   mode: AppMode;
   sortOrder: SortOrder;
-  filterRepos: string[];
 }
 
-export function StatusBar({ mode, sortOrder, filterRepos }: StatusBarProps) {
+export function StatusBar({ mode, sortOrder }: StatusBarProps) {
   return (
     <Box flexDirection="column" borderTop borderStyle="single" paddingX={1}>
-      {filterRepos.length > 0 && mode !== "filter" && (
-        <Text color="yellow">Filter: {filterRepos.join(", ")}</Text>
-      )}
       <Box justifyContent="space-between">
         <Text color="gray">
           {mode === "filter"

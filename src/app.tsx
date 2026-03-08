@@ -9,6 +9,7 @@ import { PRList } from "./components/PRList.js";
 import { RepoFilter } from "./components/RepoFilter.js";
 import { StatusBar } from "./components/StatusBar.js";
 import { openInBrowser } from "./lib/browser.js";
+import { saveFilteredRepos } from "./hooks/useConfig.js";
 import type { AppMode } from "./types.js";
 
 interface AppProps {
@@ -41,7 +42,7 @@ export function App({ config }: AppProps) {
     refresh,
   } = usePRs(config.pollInterval);
 
-  const repoFilter = useRepoFilter(createdPRs, reviewRequestedPRs);
+  const repoFilter = useRepoFilter(createdPRs, reviewRequestedPRs, config.filteredRepos);
 
   const currentPRs = useMemo(() => {
     const prs = sectionPRs(activeSection);
@@ -83,6 +84,7 @@ export function App({ config }: AppProps) {
           repoFilter.toggleRepo(repoFilter.allRepos[filterCursorIndex - 1]!);
         }
       } else if (key.return) {
+        saveFilteredRepos([...repoFilter.selectedRepos]);
         setMode("list");
         setSelectedIndex(0);
       } else if (key.escape) {
@@ -133,8 +135,6 @@ export function App({ config }: AppProps) {
     );
   }
 
-  const filterRepoNames = repoFilter.isFiltering ? [...repoFilter.selectedRepos] : [];
-
   return (
     <Box flexDirection="column">
       <SummaryBar
@@ -165,7 +165,7 @@ export function App({ config }: AppProps) {
         )}
       </Box>
 
-      <StatusBar mode={mode} sortOrder={sortOrder} filterRepos={filterRepoNames} />
+      <StatusBar mode={mode} sortOrder={sortOrder} />
     </Box>
   );
 }

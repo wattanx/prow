@@ -45,6 +45,7 @@ export type PRKind = "mine" | "authored" | "authored draft";
 export interface AppConfig {
   pollInterval: number;
   defaultSection: SectionType;
+  filteredRepos: string[];
 }
 
 export type AppMode = "list" | "filter";

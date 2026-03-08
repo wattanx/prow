@@ -4,6 +4,7 @@ import type { AppConfig } from "../types.js";
 const defaults: AppConfig = {
   pollInterval: 60,
   defaultSection: "mine",
+  filteredRepos: [],
 };
 
 let store: Conf<AppConfig> | null = null;
@@ -23,5 +24,11 @@ export function loadConfig(): AppConfig {
   return {
     pollInterval: s.get("pollInterval"),
     defaultSection: s.get("defaultSection"),
+    filteredRepos: s.get("filteredRepos"),
   };
+}
+
+export function saveFilteredRepos(repos: string[]): void {
+  const s = getStore();
+  s.set("filteredRepos", repos);
 }
