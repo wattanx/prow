@@ -3,7 +3,6 @@ import { Box, Text, useApp, useInput } from "ink";
 import type { SectionType, AppConfig, SortOrder } from "./types.js";
 import { usePRs } from "./hooks/usePRs.js";
 import { useRepoFilter } from "./hooks/useRepoFilter.js";
-import { SummaryBar } from "./components/SummaryBar.js";
 import { SectionList, SECTIONS } from "./components/SectionList.js";
 import { PRList } from "./components/PRList.js";
 import { RepoFilter } from "./components/RepoFilter.js";
@@ -137,35 +136,24 @@ export function App({ config }: AppProps) {
 
   return (
     <Box flexDirection="column">
-      <SummaryBar
-        mine={sectionCounts.mine}
-        authored={sectionCounts.authored}
-        newCount={sectionCounts.new}
-        stale={sectionCounts.stale}
-        lastUpdated={lastUpdated}
-        loading={loading}
-      />
+      <SectionList activeSection={activeSection} counts={sectionCounts} />
 
-      <Box borderTop borderStyle="single">
-        <SectionList activeSection={activeSection} counts={sectionCounts} />
+      {mode === "filter" ? (
+        <RepoFilter
+          allRepos={repoFilter.allRepos}
+          selectedRepos={repoFilter.selectedRepos}
+          cursorIndex={filterCursorIndex}
+        />
+      ) : (
+        <PRList
+          prs={currentPRs}
+          selectedIndex={selectedIndex}
+          activeSection={activeSection}
+          emptyMessage={EMPTY_MESSAGES[activeSection]}
+        />
+      )}
 
-        {mode === "filter" ? (
-          <RepoFilter
-            allRepos={repoFilter.allRepos}
-            selectedRepos={repoFilter.selectedRepos}
-            cursorIndex={filterCursorIndex}
-          />
-        ) : (
-          <PRList
-            prs={currentPRs}
-            selectedIndex={selectedIndex}
-            activeSection={activeSection}
-            emptyMessage={EMPTY_MESSAGES[activeSection]}
-          />
-        )}
-      </Box>
-
-      <StatusBar mode={mode} sortOrder={sortOrder} />
+      <StatusBar mode={mode} sortOrder={sortOrder} lastUpdated={lastUpdated} loading={loading} />
     </Box>
   );
 }

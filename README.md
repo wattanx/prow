@@ -14,19 +14,18 @@ Quickly triage review requests and authored PRs across multiple repositories wit
 - Vim keybindings + arrow key support
 
 ```
- Mine 4 | Authored 3 | New 1 | Stale 2                Updated 13:24
-─────────────────────────────────────────────────────────────────────
-           │
-  > new (1)│  org/repo-a
-    stale(2)│    Fix cache invalidation              2h   mine
-    mine (4)│    Refactor auth flow                   1d   mine
-    authored│
-         (3)│  org/repo-b
-           │  > Improve loading state               5h   mine
-           │    Add error boundary                  3d   mine
-           │
-─────────────────────────────────────────────────────────────────────
- j/↓ k/↑ move  tab section  ⏎ open  r refresh  s sort  f filter  q quit
+ new (1)   stale (2)   [mine (4)]   authored (3)
+
+  org/repo-a
+  > Fix cache invalidation                            2h          mine
+    Refactor auth flow                                 1d          mine
+
+  org/repo-b
+    Improve loading state                              5h          mine
+    Add error boundary                                 3d          mine
+
+──────────────────────────────────────────────────────────────────────────────────
+ j/k move  h/l section  g/G top/end  ...       Sort: newest first  Updated 13:24
 ```
 
 ## Sections
@@ -71,16 +70,19 @@ prow --version  # Show version
 
 ## Keybindings
 
-| Key       | Action                                         |
-| --------- | ---------------------------------------------- |
-| `j` / `↓` | Move cursor down                               |
-| `k` / `↑` | Move cursor up                                 |
-| `Enter`   | Open PR in browser                             |
-| `Tab`     | Switch section (new / stale / mine / authored) |
-| `s`       | Toggle sort (newest / oldest)                  |
-| `f`       | Open repository filter                         |
-| `r`       | Refresh data                                   |
-| `q`       | Quit                                           |
+| Key               | Action                        |
+| ----------------- | ----------------------------- |
+| `j` / `↓`         | Move cursor down              |
+| `k` / `↑`         | Move cursor up                |
+| `g`               | Jump to first item            |
+| `G`               | Jump to last item             |
+| `h` / `Shift+Tab` | Previous section              |
+| `l` / `Tab`       | Next section                  |
+| `Enter`           | Open PR in browser            |
+| `s`               | Toggle sort (newest / oldest) |
+| `f`               | Open repository filter        |
+| `r`               | Refresh data                  |
+| `q`               | Quit                          |
 
 ### Filter mode
 
