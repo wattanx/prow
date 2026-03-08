@@ -14,6 +14,7 @@ prow - GitHub PR management TUI
 Usage:
   prow            Open the TUI
   prow upgrade    Update to latest version
+  prow uninstall  Uninstall prow
   prow --help     Show this help
   prow --version  Show version
 
@@ -37,6 +38,12 @@ if (args.includes("--version") || args.includes("-v")) {
 
 if (args[0] === "upgrade") {
   await selfUpdate();
+  process.exit(0);
+}
+
+if (args[0] === "uninstall") {
+  const { selfUninstall } = await import("./lib/updater.js");
+  await selfUninstall();
   process.exit(0);
 }
 

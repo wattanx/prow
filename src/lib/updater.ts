@@ -68,3 +68,11 @@ export async function selfUpdate(): Promise<void> {
 
   console.log(`Updated to v${latest}`);
 }
+
+export async function selfUninstall(): Promise<void> {
+  const binaryPath = process.execPath;
+
+  await unlink(binaryPath);
+  console.log(`Removed ${binaryPath}`);
+  console.log("prow has been uninstalled");
+}
