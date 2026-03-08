@@ -39,7 +39,6 @@ Quickly triage review requests and authored PRs across multiple repositories wit
 
 ## Prerequisites
 
-- Node.js >= 20
 - [GitHub CLI](https://cli.github.com/) (`gh`) installed and authenticated
 
 ```bash
@@ -49,21 +48,26 @@ gh auth login
 ## Install
 
 ```bash
-pnpm install
-pnpm build
+curl -fsSL https://raw.githubusercontent.com/wattanx/prow/main/install.sh | bash
+```
+
+By default, the binary is installed to `/usr/local/bin`. You can change the install directory with `PROW_INSTALL_DIR`:
+
+```bash
+PROW_INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/wattanx/prow/main/install.sh | bash
+```
+
+## Upgrade
+
+```bash
+prow upgrade
 ```
 
 ## Usage
 
 ```bash
-# Start the TUI
-node dist/index.mjs
-
-# Or
-./bin/prow.js
-```
-
-```bash
+prow            # Open the TUI
+prow upgrade    # Update to latest version
 prow --help     # Show help
 prow --version  # Show version
 ```
