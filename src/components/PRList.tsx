@@ -1,20 +1,12 @@
 import React, { useMemo } from "react";
 import { Box, Text, useStdout } from "ink";
-import type { PullRequest, SectionType, PRKind } from "../types.js";
+import type { PullRequest } from "../types.js";
 import { PRRow } from "./PRRow.js";
 
 interface PRListProps {
   prs: PullRequest[];
   selectedIndex: number;
-  activeSection: SectionType;
   emptyMessage: string;
-}
-
-function getKind(pr: PullRequest, section: SectionType): PRKind {
-  if (section === "authored") {
-    return pr.isDraft ? "authored draft" : "authored";
-  }
-  return "mine";
 }
 
 interface DisplayRow {
@@ -57,19 +49,29 @@ function getViewport(
     return { start: 0, end: rows.length };
   }
 
-  const half = Math.floor(maxVisible / 2);
+  // Reserve 2 lines for "..." indicators (worst case: top + bottom)
+  const contentMax = maxVisible - 2;
+  const half = Math.floor(contentMax / 2);
   let start = Math.max(0, selectedRowIdx - half);
-  let end = start + maxVisible;
+  let end = start + contentMax;
 
   if (end > rows.length) {
     end = rows.length;
-    start = Math.max(0, end - maxVisible);
+    start = Math.max(0, end - contentMax);
+  }
+
+  // Reclaim unused indicator slots
+  if (start === 0) {
+    end = Math.min(rows.length, end + 1);
+  }
+  if (end === rows.length) {
+    start = Math.max(0, start - 1);
   }
 
   return { start, end };
 }
 
-export function PRList({ prs, selectedIndex, activeSection, emptyMessage }: PRListProps) {
+export function PRList({ prs, selectedIndex, emptyMessage }: PRListProps) {
   const { stdout } = useStdout();
   // Reserve lines for SummaryBar(1) + border(1) + StatusBar(2) + padding
   const maxVisible = (stdout?.rows ?? 24) - 6;
@@ -95,16 +97,16 @@ export function PRList({ prs, selectedIndex, activeSection, emptyMessage }: PRLi
   );
 
   return (
-    <Box flexDirection="column" flexGrow={1} height={maxVisible}>
+    <Box flexDirection="column" flexGrow={1} height={maxVisible} paddingLeft={2}>
       {start > 0 && (
-        <Box paddingLeft={2}>
+        <Box>
           <Text color="gray">...</Text>
         </Box>
       )}
       {visibleRows.map((row, i) => {
         if (row.type === "repo-header") {
           return (
-            <Box key={`header-${row.repo}-${start + i}`} paddingLeft={2}>
+            <Box key={`header-${row.repo}-${start + i}`}>
               <Text bold color="cyan">
                 {row.repo}
               </Text>
@@ -115,17 +117,15 @@ export function PRList({ prs, selectedIndex, activeSection, emptyMessage }: PRLi
           return <Box key={`spacer-${start + i}`} height={1} />;
         }
         return (
-          <Box key={`pr-${row.pr!.repository.nameWithOwner}#${row.pr!.number}`} paddingLeft={2}>
-            <PRRow
-              pr={row.pr!}
-              isSelected={row.flatIndex === selectedIndex}
-              kind={getKind(row.pr!, activeSection)}
-            />
-          </Box>
+          <PRRow
+            key={`pr-${row.pr!.repository.nameWithOwner}#${row.pr!.number}`}
+            pr={row.pr!}
+            isSelected={row.flatIndex === selectedIndex}
+          />
         );
       })}
       {end < displayRows.length && (
-        <Box paddingLeft={2}>
+        <Box>
           <Text color="gray">...</Text>
         </Box>
       )}

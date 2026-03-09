@@ -148,7 +148,6 @@ export function App({ config }: AppProps) {
         <PRList
           prs={currentPRs}
           selectedIndex={selectedIndex}
-          activeSection={activeSection}
           emptyMessage={EMPTY_MESSAGES[activeSection]}
         />
       )}

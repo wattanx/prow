@@ -1,11 +1,10 @@
 import React from "react";
 import { Box, Text } from "ink";
-import type { PullRequest, PRKind } from "../types.js";
+import type { PullRequest } from "../types.js";
 
 interface PRRowProps {
   pr: PullRequest;
   isSelected: boolean;
-  kind: PRKind;
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -26,9 +25,11 @@ function formatRelativeTime(dateStr: string): string {
   return `${months}mo`;
 }
 
-export function PRRow({ pr, isSelected, kind }: PRRowProps) {
+export function PRRow({ pr, isSelected }: PRRowProps) {
+  const bg = isSelected ? "gray" : undefined;
+
   return (
-    <Box inverse={isSelected}>
+    <Box paddingX={1} backgroundColor={bg}>
       <Text>{isSelected ? "> " : "  "}</Text>
       <Box flexGrow={1}>
         <Text wrap="truncate">{pr.title}</Text>
@@ -37,8 +38,8 @@ export function PRRow({ pr, isSelected, kind }: PRRowProps) {
         <Text color={isSelected ? undefined : "gray"}>{formatRelativeTime(pr.updatedAt)}</Text>
       </Box>
       <Box width={16} justifyContent="flex-end">
-        <Text color={isSelected ? undefined : kind === "authored draft" ? "yellow" : "gray"}>
-          {kind}
+        <Text color={isSelected ? undefined : "gray"}>
+          {pr.author.login}
         </Text>
       </Box>
     </Box>
