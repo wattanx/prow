@@ -25,12 +25,30 @@ function formatRelativeTime(dateStr: string): string {
   return `${months}mo`;
 }
 
+function getCIStatus(pr: PullRequest): { icon: string; color: string } {
+  const state = pr.commits.nodes[0]?.commit.statusCheckRollup?.state ?? null;
+  switch (state) {
+    case "SUCCESS":
+      return { icon: "✓", color: "green" };
+    case "FAILURE":
+    case "ERROR":
+      return { icon: "✗", color: "red" };
+    case "PENDING":
+    case "EXPECTED":
+      return { icon: "◌", color: "yellow" };
+    default:
+      return { icon: "-", color: "gray" };
+  }
+}
+
 export function PRRow({ pr, isSelected }: PRRowProps) {
   const bg = isSelected ? "gray" : undefined;
+  const ci = getCIStatus(pr);
 
   return (
     <Box paddingX={1} backgroundColor={bg}>
       <Text>{isSelected ? "> " : "  "}</Text>
+      <Text color={ci.color}>{ci.icon} </Text>
       <Box flexGrow={1}>
         <Text wrap="truncate">{pr.title}</Text>
       </Box>
