@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO="wattanx/prow"
-INSTALL_DIR="${PROW_INSTALL_DIR:-/usr/local/bin}"
+INSTALL_DIR="${PROW_INSTALL_DIR:-$HOME/.local/bin}"
 BINARY_NAME="prow"
 
 get_os() {
@@ -57,6 +57,7 @@ main() {
   chmod +x "${tmp_dir}/${BINARY_NAME}"
 
   # Install
+  mkdir -p "$INSTALL_DIR"
   if [ -w "$INSTALL_DIR" ]; then
     mv "${tmp_dir}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
   else
@@ -65,6 +66,14 @@ main() {
   fi
 
   echo "prow ${version} installed to ${INSTALL_DIR}/${BINARY_NAME}"
+
+  # Warn if INSTALL_DIR is not in PATH
+  case ":$PATH:" in
+    *":${INSTALL_DIR}:"*) ;;
+    *) echo "Warning: ${INSTALL_DIR} is not in your PATH. Add it with:" >&2
+       echo "  export PATH=\"${INSTALL_DIR}:\$PATH\"" >&2
+       ;;
+  esac
 }
 
 main

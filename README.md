@@ -51,10 +51,10 @@ gh auth login
 curl -fsSL https://raw.githubusercontent.com/wattanx/prow/main/install.sh | bash
 ```
 
-By default, the binary is installed to `/usr/local/bin`. You can change the install directory with `PROW_INSTALL_DIR`:
+By default, the binary is installed to `~/.local/bin`. You can change the install directory with `PROW_INSTALL_DIR`:
 
 ```bash
-PROW_INSTALL_DIR=~/.local/bin curl -fsSL https://raw.githubusercontent.com/wattanx/prow/main/install.sh | bash
+PROW_INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/wattanx/prow/main/install.sh | bash
 ```
 
 ## Upgrade
