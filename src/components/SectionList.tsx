@@ -7,12 +7,12 @@ interface SectionListProps {
   counts: {
     new: number;
     stale: number;
-    mine: number;
+    all: number;
     authored: number;
   };
 }
 
-const SECTIONS: SectionType[] = ["new", "stale", "mine", "authored"];
+const SECTIONS: SectionType[] = ["new", "stale", "all", "authored"];
 
 export function SectionList({ activeSection, counts }: SectionListProps) {
   return (

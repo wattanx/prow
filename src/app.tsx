@@ -18,7 +18,7 @@ interface AppProps {
 const EMPTY_MESSAGES: Record<SectionType, string> = {
   new: "No new review requests",
   stale: "No stale review requests",
-  mine: "No review requests",
+  all: "No review requests",
   authored: "No authored pull requests",
 };
 

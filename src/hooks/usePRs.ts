@@ -7,7 +7,7 @@ const STALE_THRESHOLD_MS = 48 * 60 * 60 * 1000; // 48 hours
 interface SectionCounts {
   new: number;
   stale: number;
-  mine: number;
+  all: number;
   authored: number;
 }
 
@@ -88,7 +88,7 @@ export function usePRs(pollInterval: number): UsePRsResult {
     () => ({
       new: newPRs.length,
       stale: stalePRs.length,
-      mine: reviewRequestedPRs.length,
+      all: reviewRequestedPRs.length,
       authored: createdPRs.length,
     }),
     [newPRs, stalePRs, reviewRequestedPRs, createdPRs],
@@ -101,7 +101,7 @@ export function usePRs(pollInterval: number): UsePRsResult {
           return newPRs;
         case "stale":
           return stalePRs;
-        case "mine":
+        case "all":
           return reviewRequestedPRs;
         case "authored":
           return createdPRs;

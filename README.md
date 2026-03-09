@@ -14,15 +14,15 @@ Quickly triage review requests and authored PRs across multiple repositories wit
 - Vim keybindings + arrow key support
 
 ```
- new (1)   stale (2)   [mine (4)]   authored (3)
+ new (1)   stale (2)   [all (4)]   authored (3)
 
   org/repo-a
-  > Fix cache invalidation                            2h          mine
-    Refactor auth flow                                 1d          mine
+  > ✓ Fix cache invalidation                           2h        user-a
+    ✗ Refactor auth flow                               1d        user-b
 
   org/repo-b
-    Improve loading state                              5h          mine
-    Add error boundary                                 3d          mine
+    ✓ Improve loading state                            5h        user-c
+    ◌ Add error boundary                               3d        user-a
 
 ──────────────────────────────────────────────────────────────────────────────────
  j/k move  h/l section  g/G top/end  ...       Sort: newest first  Updated 13:24
@@ -34,7 +34,7 @@ Quickly triage review requests and authored PRs across multiple repositories wit
 | ------------ | ------------------------------------------------------------------------ |
 | **new**      | Review requests with no reviews yet and updated within the last 48 hours |
 | **stale**    | Review requests that have not been updated for more than 48 hours        |
-| **mine**     | All PRs where your review is requested (includes both new and stale)     |
+| **all**      | All PRs where your review is requested (includes both new and stale)     |
 | **authored** | All open PRs you created                                                 |
 
 ## Prerequisites
@@ -105,14 +105,14 @@ Configuration is stored at `~/.config/prow/config.json` (auto-created on first l
 ```json
 {
   "pollInterval": 60,
-  "defaultSection": "mine"
+  "defaultSection": "all"
 }
 ```
 
-| Key              | Description                                             | Default  |
-| ---------------- | ------------------------------------------------------- | -------- |
-| `pollInterval`   | Auto-refresh interval in seconds                        | `60`     |
-| `defaultSection` | Initial section (`new` / `stale` / `mine` / `authored`) | `"mine"` |
+| Key              | Description                                            | Default |
+| ---------------- | ------------------------------------------------------ | ------- |
+| `pollInterval`   | Auto-refresh interval in seconds                       | `60`    |
+| `defaultSection` | Initial section (`new` / `stale` / `all` / `authored`) | `"all"` |
 
 ## Tech Stack
 

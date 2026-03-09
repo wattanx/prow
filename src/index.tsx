@@ -22,7 +22,7 @@ Keybindings:
   j/↓     Move down
   k/↑     Move up
   Enter   Open PR in browser
-  Tab     Switch section (new / stale / mine / authored)
+  Tab     Switch section (new / stale / all / authored)
   s       Toggle sort (newest / oldest)
   f       Filter by repository
   r       Refresh

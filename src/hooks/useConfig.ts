@@ -3,7 +3,7 @@ import type { AppConfig } from "../types.js";
 
 const defaults: AppConfig = {
   pollInterval: 60,
-  defaultSection: "mine",
+  defaultSection: "all",
   filteredRepos: [],
 };
 
@@ -21,9 +21,15 @@ function getStore(): Conf<AppConfig> {
 
 export function loadConfig(): AppConfig {
   const s = getStore();
+  let defaultSection = s.get("defaultSection");
+  // Migrate legacy "mine" to "all"
+  if (defaultSection === ("mine" as string)) {
+    defaultSection = "all";
+    s.set("defaultSection", "all");
+  }
   return {
     pollInterval: s.get("pollInterval"),
-    defaultSection: s.get("defaultSection"),
+    defaultSection,
     filteredRepos: s.get("filteredRepos"),
   };
 }

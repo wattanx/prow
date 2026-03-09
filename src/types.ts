@@ -36,11 +36,9 @@ export interface PullRequest {
   };
 }
 
-export type SectionType = "new" | "stale" | "mine" | "authored";
+export type SectionType = "new" | "stale" | "all" | "authored";
 
 export type SortOrder = "oldest" | "newest";
-
-export type PRKind = "mine" | "authored" | "authored draft";
 
 export interface AppConfig {
   pollInterval: number;
