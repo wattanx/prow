@@ -149,6 +149,7 @@ export function App({ config }: AppProps) {
           prs={currentPRs}
           selectedIndex={selectedIndex}
           emptyMessage={EMPTY_MESSAGES[activeSection]}
+          loading={loading}
         />
       )}
 
