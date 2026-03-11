@@ -7,6 +7,7 @@ interface PRListProps {
   prs: PullRequest[];
   selectedIndex: number;
   emptyMessage: string;
+  loading: boolean;
 }
 
 interface DisplayRow {
@@ -71,7 +72,7 @@ function getViewport(
   return { start, end };
 }
 
-export function PRList({ prs, selectedIndex, emptyMessage }: PRListProps) {
+export function PRList({ prs, selectedIndex, emptyMessage, loading }: PRListProps) {
   const { stdout } = useStdout();
   // Reserve lines for SummaryBar(1) + border(1) + StatusBar(2) + padding
   const maxVisible = (stdout?.rows ?? 24) - 6;
@@ -81,6 +82,14 @@ export function PRList({ prs, selectedIndex, emptyMessage }: PRListProps) {
     () => getViewport(displayRows, selectedIndex, maxVisible),
     [displayRows, selectedIndex, maxVisible],
   );
+
+  if (loading && prs.length === 0) {
+    return (
+      <Box flexGrow={1} height={maxVisible} paddingLeft={2} paddingTop={1}>
+        <Text color="gray">Loading...</Text>
+      </Box>
+    );
+  }
 
   if (prs.length === 0) {
     return (
