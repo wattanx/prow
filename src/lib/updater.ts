@@ -53,7 +53,7 @@ export async function selfUpdate(): Promise<void> {
   // Download via gh api to handle authentication
   const { stdout } = await execFileAsync(
     "gh",
-    ["api", asset.url, "-H", "Accept: application/octet-stream", "--output", "-"],
+    ["api", asset.url, "-H", "Accept: application/octet-stream"],
     { encoding: "buffer", maxBuffer: 200 * 1024 * 1024 },
   );
 
