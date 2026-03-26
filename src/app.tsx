@@ -49,13 +49,33 @@ export function App({ config }: AppProps) {
       ? prs.filter((pr) => repoFilter.selectedRepos.has(pr.repository.nameWithOwner))
       : prs;
 
-    const sorted = [...filtered];
-    if (sortOrder === "oldest") {
-      sorted.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
-    } else {
-      sorted.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    // Group by repository, then sort within each group by date
+    const grouped = new Map<string, typeof filtered>();
+    for (const pr of filtered) {
+      const repo = pr.repository.nameWithOwner;
+      if (!grouped.has(repo)) {
+        grouped.set(repo, []);
+      }
+      grouped.get(repo)!.push(pr);
     }
-    return sorted;
+
+    // Sort PRs within each group by date
+    const isOldest = sortOrder === "oldest";
+    for (const prs of grouped.values()) {
+      prs.sort((a, b) => {
+        const diff = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        return isOldest ? -diff : diff;
+      });
+    }
+
+    // Sort groups by their most recent (or oldest) PR
+    const sortedGroups = [...grouped.entries()].sort(([, aPrs], [, bPrs]) => {
+      const aTime = new Date(aPrs[0]!.updatedAt).getTime();
+      const bTime = new Date(bPrs[0]!.updatedAt).getTime();
+      return isOldest ? aTime - bTime : bTime - aTime;
+    });
+
+    return sortedGroups.flatMap(([, prs]) => prs);
   }, [activeSection, sectionPRs, repoFilter.isFiltering, repoFilter.selectedRepos, sortOrder]);
 
   const selectedPR = currentPRs[selectedIndex] ?? null;
