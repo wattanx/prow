@@ -12,7 +12,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "test": "vitest"
   },
   "dependencies": {
     "conf": "^15.1.0",
@@ -23,10 +24,12 @@
   "devDependencies": {
     "@types/node": "^25.3.5",
     "@types/react": "^19.2.14",
+    "ink-testing-library": "^4.0.0",
     "oxfmt": "^0.36.0",
     "oxlint": "^1.51.0",
     "react-devtools-core": "^7.0.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
   },
   "packageManager": "pnpm@10.30.2"
 }

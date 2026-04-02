@@ -56,9 +56,7 @@ export function PRRow({ pr, isSelected }: PRRowProps) {
         <Text color={isSelected ? undefined : "gray"}>{formatRelativeTime(pr.updatedAt)}</Text>
       </Box>
       <Box width={16} justifyContent="flex-end">
-        <Text color={isSelected ? undefined : "gray"}>
-          {pr.author.login}
-        </Text>
+        <Text color={isSelected ? undefined : "gray"}>{pr.author.login}</Text>
       </Box>
     </Box>
   );

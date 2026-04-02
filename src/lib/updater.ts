@@ -22,10 +22,7 @@ function getPlatform(): string {
 }
 
 async function getLatestRelease(): Promise<Release> {
-  const { stdout } = await execFileAsync("gh", [
-    "api",
-    `repos/${REPO}/releases/latest`,
-  ]);
+  const { stdout } = await execFileAsync("gh", ["api", `repos/${REPO}/releases/latest`]);
   return JSON.parse(stdout);
 }
 
