@@ -1,65 +1,39 @@
 use anyhow::Result;
+use tokio::process::Command;
 
 use crate::types::PullRequest;
-
-/// GraphQL fragment for PR fields.
-/// See: src/lib/github.ts — PR_FRAGMENT
-const PR_FRAGMENT: &str = r#"
-  title
-  url
-  number
-  state
-  isDraft
-  createdAt
-  updatedAt
-  repository {
-    nameWithOwner
-  }
-  author {
-    login
-  }
-  labels(first: 10) {
-    nodes {
-      name
-      color
-    }
-  }
-  reviewDecision
-  reviewRequests {
-    totalCount
-  }
-  reviews(first: 1) {
-    totalCount
-  }
-  commits(last: 1) {
-    nodes {
-      commit {
-        statusCheckRollup {
-          state
-        }
-      }
-    }
-  }
-"#;
 
 /// GraphQL search query template.
 /// See: src/lib/github.ts — SEARCH_QUERY
 const SEARCH_QUERY: &str = r#"
-  query($searchQuery: String!, $first: Int!, $after: String) {
-    search(query: $searchQuery, type: ISSUE, first: $first, after: $after) {
-      issueCount
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-      nodes {
-        ... on PullRequest {
-          PR_FRAGMENT
+    query($searchQuery: String!, $first: Int!, $after: String) {
+      search(query: $searchQuery, type: ISSUE, first: $first, after: $after) {
+        issueCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          ... on PullRequest {
+            title
+            url
+            number
+            state
+            isDraft
+            createdAt
+            updatedAt
+            repository { nameWithOwner }
+            author { login }
+            labels(first: 10) { nodes { name color } }
+            reviewDecision
+            reviewRequests { totalCount }
+            reviews(first: 1) { totalCount }
+            commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }
+          }
         }
       }
     }
-  }
-"#;
+  "#;
 
 /// Trait for GitHub API access (allows mocking in tests).
 pub trait GitHubClient {
@@ -82,7 +56,7 @@ impl GitHubClient for GhCliClient {
     ///
     /// See: src/lib/github.ts — fetchCreatedPRs()
     async fn fetch_created_prs(&self) -> Result<Vec<PullRequest>> {
-        todo!("Shell out to `gh api graphql` and fetch created PRs with pagination")
+        fetch_all_pages("author:@me is:pr is:open sort:updated-desc").await
     }
 
     /// Fetch PRs where review is requested from the current user.
@@ -90,22 +64,64 @@ impl GitHubClient for GhCliClient {
     ///
     /// See: src/lib/github.ts — fetchReviewRequestedPRs()
     async fn fetch_review_requested_prs(&self) -> Result<Vec<PullRequest>> {
-        todo!("Shell out to `gh api graphql` and fetch review-requested PRs with pagination")
+        fetch_all_pages("review-requested:@me is:pr is:open sort:updated-desc").await
     }
 }
 
 /// Execute a GraphQL query via `gh api graphql` and parse the response.
 ///
 /// See: src/lib/github.ts — ghGraphql()
-async fn gh_graphql(_query: &str, _search_query: &str, _first: u32, _after: Option<&str>) -> Result<SearchResponse> {
-    todo!("Execute gh api graphql subprocess and parse JSON response")
+async fn gh_graphql(query: &str, search_query: &str, first: u32, after: Option<&str>) -> Result<SearchResponse> {
+    let mut args = vec![
+      "api".to_string(),
+      "graphql".to_string(),
+      "-f".to_string(),
+      format!("query={query}"),
+      "-f".to_string(),
+      format!("searchQuery={search_query}"),
+      "-F".to_string(),
+      format!("first={first}"),
+    ];
+
+    if let Some(cursor) = after {
+      args.push("-f".to_string());
+      args.push(format!("after={cursor}"));
+    }
+
+    let output = Command::new("gh")
+        .args(&args)
+        .output()
+        .await?;
+
+    let stdout = String::from_utf8(output.stdout)?;
+    let response: SearchResponse = serde_json::from_str(&stdout)?;
+    Ok(response)
 }
 
 /// Fetch all pages of a search query.
 ///
 /// See: src/lib/github.ts — fetchAllPages()
-async fn fetch_all_pages(_search_query: &str) -> Result<Vec<PullRequest>> {
-    todo!("Paginate through all results using gh_graphql()")
+async fn fetch_all_pages(search_query: &str) -> Result<Vec<PullRequest>> {
+    let mut all_prs = Vec::new();
+    let mut after: Option<String> = None;
+
+    loop {
+      let response = gh_graphql(
+        SEARCH_QUERY,
+        search_query,
+        50,
+        after.as_deref()
+      ).await?;
+
+      all_prs.extend(response.data.search.nodes);
+
+      if !response.data.search.page_info.has_next_page {
+        break;
+      }
+      after = response.data.search.page_info.end_cursor;
+    }
+
+    Ok(all_prs)
 }
 
 // -- Response types for gh API JSON parsing --
