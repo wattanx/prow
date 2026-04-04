@@ -2,7 +2,10 @@ use std::collections::{BTreeSet, HashMap};
 
 use chrono::{DateTime, Utc};
 
-use crate::types::{AppConfig, AppMode, PullRequest, SectionType, SortOrder};
+use crate::{
+    pr_classifier::{classify_new, classify_stale},
+    types::{AppConfig, AppMode, PullRequest, SectionType, SortOrder},
+};
 
 /// Central application state.
 /// Replaces all React useState hooks from src/app.tsx.
@@ -60,25 +63,94 @@ impl AppState {
     /// Get PRs for the active section, filtered and sorted.
     /// See: src/app.tsx — currentPRs (lines 46-79)
     pub fn current_prs(&self) -> Vec<PullRequest> {
-        todo!("Classify PRs into sections, apply repo filter, group by repo, sort")
+        let prs = match self.active_section {
+            SectionType::New => classify_new(&self.review_requested_prs),
+            SectionType::Stale => classify_stale(&self.review_requested_prs),
+            SectionType::All => self.review_requested_prs.clone(),
+            SectionType::Authored => self.created_prs.clone(),
+        };
+
+        let filtered: Vec<PullRequest> = if self.is_filtering() {
+            prs.into_iter()
+                .filter(|pr| self.selected_repos.contains(&pr.repository.name_with_owner))
+                .collect()
+        } else {
+            prs
+        };
+
+        let mut grouped: HashMap<String, Vec<PullRequest>> = HashMap::new();
+        for pr in filtered {
+            grouped
+                .entry(pr.repository.name_with_owner.clone())
+                .or_default()
+                .push(pr);
+        }
+
+        let is_oldest = self.sort_order == SortOrder::Oldest;
+        for prs in grouped.values_mut() {
+            prs.sort_by(|a, b| {
+                let cmp = b.updated_at.cmp(&a.updated_at);
+                if is_oldest { cmp.reverse() } else { cmp }
+            });
+        }
+
+        let mut sorted_groups: Vec<_> = grouped.into_iter().collect();
+        sorted_groups.sort_by(|(_, a_prs), (_, b_prs)| {
+            let a_time = &a_prs[0].updated_at;
+            let b_time = &b_prs[0].updated_at;
+            if is_oldest {
+                a_time.cmp(b_time)
+            } else {
+                b_time.cmp(a_time)
+            }
+        });
+
+        sorted_groups.into_iter().flat_map(|(_, prs)| prs).collect()
     }
 
     /// Recompute all_repos from created + review_requested PRs.
     /// See: src/hooks/useRepoFilter.ts — allRepos
     pub fn update_repos(&mut self) {
-        todo!("Derive sorted unique repo list from all PRs")
+        let mut repos = BTreeSet::new();
+        for pr in self
+            .created_prs
+            .iter()
+            .chain(self.review_requested_prs.iter())
+        {
+            repos.insert(pr.repository.name_with_owner.clone());
+        }
+        self.all_repos = repos.into_iter().collect();
     }
 
     /// Switch to the next/previous section.
     /// See: src/app.tsx — switchSection()
     pub fn switch_section(&mut self, direction: i32) {
-        todo!("Cycle through sections, reset selected_index")
+        let sections = SectionType::ALL_SECTIONS;
+        let current = sections
+            .iter()
+            .position(|s| *s == self.active_section)
+            .unwrap_or(0);
+        let next = (current as i32 + direction).rem_euclid(sections.len() as i32) as usize;
+        self.active_section = sections[next];
+        self.selected_index = 0;
     }
 
     /// Toggle a repo in the filter.
     /// See: src/hooks/useRepoFilter.ts — toggleRepo()
     pub fn toggle_repo(&mut self, index: usize) {
-        todo!("Toggle repo selection, handle 'All' logic")
+        let repo = self.all_repos[index].clone();
+        if self.selected_repos.is_empty() {
+            self.selected_repos = BTreeSet::from_iter(self.all_repos.clone());
+            self.selected_repos.remove(&repo);
+        } else if self.selected_repos.contains(&repo) {
+            self.selected_repos.remove(&repo);
+        } else {
+            self.selected_repos.insert(repo);
+        }
+
+        if self.selected_repos.len() == self.all_repos.len() {
+            self.selected_repos.clear();
+        }
     }
 
     /// Select all repos (reset filter).
@@ -122,6 +194,11 @@ impl AppState {
     /// Compute section counts.
     /// See: src/hooks/usePRs.ts — sectionCounts
     pub fn section_counts(&self) -> SectionCounts {
-        todo!("Count PRs per section using classify_new/classify_stale")
+        SectionCounts {
+            new: classify_new(&self.review_requested_prs).len(),
+            stale: classify_stale(&self.review_requested_prs).len(),
+            all: self.review_requested_prs.len(),
+            authored: self.created_prs.len(),
+        }
     }
 }
