@@ -4,5 +4,6 @@ use anyhow::Result;
 ///
 /// See: src/lib/browser.ts — openInBrowser()
 pub fn open_in_browser(url: &str) -> Result<()> {
-    todo!("Open URL using the `open` crate")
+    open::that(url)?;
+    Ok(())
 }
