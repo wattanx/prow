@@ -14,10 +14,7 @@ use crate::types::PullRequest;
 #[derive(Debug, Clone)]
 pub enum DisplayRow {
     RepoHeader(String),
-    Pr {
-        pr: PullRequest,
-        flat_index: usize,
-    },
+    Pr { pr: PullRequest, flat_index: usize },
     Spacer,
 }
 

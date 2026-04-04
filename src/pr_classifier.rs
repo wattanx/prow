@@ -8,9 +8,8 @@ const STALE_THRESHOLD_MS: i64 = 48 * 60 * 60 * 1000;
 ///
 /// See: src/hooks/usePRs.ts — classifyNew()
 pub fn classify_new(prs: &[PullRequest]) -> Vec<PullRequest> {
-    
     prs.iter()
-        .filter(|pr|{
+        .filter(|pr| {
             let has_no_reviews = pr.reviews.total_count == 0;
             let now = Utc::now();
             let Ok(updated) = pr.updated_at.parse::<chrono::DateTime<Utc>>() else {
@@ -23,7 +22,6 @@ pub fn classify_new(prs: &[PullRequest]) -> Vec<PullRequest> {
         })
         .cloned()
         .collect()
-
 }
 
 /// Filter PRs that are "stale": not updated for 48+ hours.

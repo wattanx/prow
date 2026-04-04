@@ -14,7 +14,7 @@ pub fn load_config() -> Result<AppConfig> {
 
     let text = match fs::read_to_string(&config_path) {
         Ok(text) => text,
-        Err(_) => return Ok(AppConfig::default())
+        Err(_) => return Ok(AppConfig::default()),
     };
     let json: serde_json::Value = serde_json::from_str(&text)?;
     let poll_interval = json["pollInterval"].as_u64().unwrap_or(60);
@@ -23,20 +23,21 @@ pub fn load_config() -> Result<AppConfig> {
         .as_array()
         .map(|arr| {
             arr.iter()
-                .filter_map(|v| v.as_str().map(String::from)).collect()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect()
         })
         .unwrap_or_default();
 
-    let default_section = match  default_section {
+    let default_section = match default_section {
         "mine" => "all",
-        other => other
+        other => other,
     };
 
     let default_section = match default_section {
         "new" => SectionType::New,
         "stale" => SectionType::Stale,
         "authored" => SectionType::Authored,
-        _ => SectionType::All
+        _ => SectionType::All,
     };
     Ok(AppConfig {
         poll_interval,
@@ -54,9 +55,9 @@ pub fn save_filtered_repos(repos: &[String]) -> Result<()> {
 
     let mut json: serde_json::Value = match fs::read_to_string(&config_path) {
         Ok(text) => serde_json::from_str(&text)?,
-        Err(_) => serde_json::json!({})
+        Err(_) => serde_json::json!({}),
     };
-    
+
     json["filteredRepos"] = serde_json::json!(repos);
     fs::write(&config_path, serde_json::to_string_pretty(&json)?)?;
     Ok(())

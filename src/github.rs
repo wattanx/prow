@@ -37,8 +37,12 @@ const SEARCH_QUERY: &str = r#"
 
 /// Trait for GitHub API access (allows mocking in tests).
 pub trait GitHubClient {
-    fn fetch_created_prs(&self) -> impl std::future::Future<Output = Result<Vec<PullRequest>>> + Send;
-    fn fetch_review_requested_prs(&self) -> impl std::future::Future<Output = Result<Vec<PullRequest>>> + Send;
+    fn fetch_created_prs(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<PullRequest>>> + Send;
+    fn fetch_review_requested_prs(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<PullRequest>>> + Send;
 }
 
 /// Real implementation that shells out to `gh api graphql`.
@@ -71,27 +75,29 @@ impl GitHubClient for GhCliClient {
 /// Execute a GraphQL query via `gh api graphql` and parse the response.
 ///
 /// See: src/lib/github.ts — ghGraphql()
-async fn gh_graphql(query: &str, search_query: &str, first: u32, after: Option<&str>) -> Result<SearchResponse> {
+async fn gh_graphql(
+    query: &str,
+    search_query: &str,
+    first: u32,
+    after: Option<&str>,
+) -> Result<SearchResponse> {
     let mut args = vec![
-      "api".to_string(),
-      "graphql".to_string(),
-      "-f".to_string(),
-      format!("query={query}"),
-      "-f".to_string(),
-      format!("searchQuery={search_query}"),
-      "-F".to_string(),
-      format!("first={first}"),
+        "api".to_string(),
+        "graphql".to_string(),
+        "-f".to_string(),
+        format!("query={query}"),
+        "-f".to_string(),
+        format!("searchQuery={search_query}"),
+        "-F".to_string(),
+        format!("first={first}"),
     ];
 
     if let Some(cursor) = after {
-      args.push("-f".to_string());
-      args.push(format!("after={cursor}"));
+        args.push("-f".to_string());
+        args.push(format!("after={cursor}"));
     }
 
-    let output = Command::new("gh")
-        .args(&args)
-        .output()
-        .await?;
+    let output = Command::new("gh").args(&args).output().await?;
 
     let stdout = String::from_utf8(output.stdout)?;
     let response: SearchResponse = serde_json::from_str(&stdout)?;
@@ -106,19 +112,14 @@ async fn fetch_all_pages(search_query: &str) -> Result<Vec<PullRequest>> {
     let mut after: Option<String> = None;
 
     loop {
-      let response = gh_graphql(
-        SEARCH_QUERY,
-        search_query,
-        50,
-        after.as_deref()
-      ).await?;
+        let response = gh_graphql(SEARCH_QUERY, search_query, 50, after.as_deref()).await?;
 
-      all_prs.extend(response.data.search.nodes);
+        all_prs.extend(response.data.search.nodes);
 
-      if !response.data.search.page_info.has_next_page {
-        break;
-      }
-      after = response.data.search.page_info.end_cursor;
+        if !response.data.search.page_info.has_next_page {
+            break;
+        }
+        after = response.data.search.page_info.end_cursor;
     }
 
     Ok(all_prs)
