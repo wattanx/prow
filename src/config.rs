@@ -48,8 +48,18 @@ pub fn load_config() -> Result<AppConfig> {
 /// Save the filtered repos list to config.
 ///
 /// See: src/hooks/useConfig.ts — saveFilteredRepos()
-pub fn save_filtered_repos(_repos: &[String]) -> Result<()> {
-    todo!("Save filtered repos to config")
+pub fn save_filtered_repos(repos: &[String]) -> Result<()> {
+    let home = std::env::var("HOME")?;
+    let config_path = std::path::PathBuf::from(home).join(".config/prow/config.json");
+
+    let mut json: serde_json::Value = match fs::read_to_string(&config_path) {
+        Ok(text) => serde_json::from_str(&text)?,
+        Err(_) => serde_json::json!({})
+    };
+    
+    json["filteredRepos"] = serde_json::json!(repos);
+    fs::write(&config_path, serde_json::to_string_pretty(&json)?)?;
+    Ok(())
 }
 
 #[cfg(test)]
