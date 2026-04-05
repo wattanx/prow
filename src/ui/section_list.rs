@@ -14,5 +14,25 @@ use crate::types::SectionType;
 ///
 /// See: src/components/SectionList.tsx
 pub fn render(frame: &mut Frame, area: Rect, active: SectionType, counts: &SectionCounts) {
-    todo!("Render section tabs with counts, highlight active section")
+    let spans: Vec<Span> = SectionType::ALL_SECTIONS
+        .iter()
+        .map(|section| {
+            let label = format!(" {} ({}) ", section.label(), counts.get(*section));
+
+            if *section == active {
+                Span::styled(
+                    label,
+                    Style::default()
+                        .fg(Color::Blue)
+                        .add_modifier(Modifier::BOLD | Modifier::REVERSED),
+                )
+            } else {
+                Span::styled(label, Style::default().fg(Color::Gray))
+            }
+        })
+        .collect();
+
+    let line = Line::from(spans);
+    let tabs = Paragraph::new(line);
+    frame.render_widget(tabs, area);
 }

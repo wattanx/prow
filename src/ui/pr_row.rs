@@ -10,7 +10,22 @@ use crate::types::{CheckState, PullRequest};
 ///
 /// See: src/components/PRRow.tsx — formatRelativeTime()
 pub fn format_relative_time(date_str: &str) -> String {
-    todo!("Parse ISO 8601 date and compute relative time from now")
+    let Ok(date) = date_str.parse::<chrono::DateTime<chrono::Utc>>() else {
+        return "-".to_string();
+    };
+
+    let diff = chrono::Utc::now() - date;
+    let minutes = diff.num_minutes();
+
+    if minutes < 60 {
+        format!("{minutes}m")
+    } else if minutes < 60 * 24 {
+        format!("{}h", minutes / 60)
+    } else if minutes < 60 * 24 * 30 {
+        format!("{}d", minutes / (60 * 24))
+    } else {
+        format!("{}mo", minutes / (60 * 24 * 30))
+    }
 }
 
 /// Get CI status icon and color from a PR's commit status.
@@ -21,7 +36,19 @@ pub fn format_relative_time(date_str: &str) -> String {
 ///   PENDING/EXPECTED -> ("◌", Color::Yellow)
 ///   None/unknown -> ("-", Color::Gray)
 pub fn ci_status(pr: &PullRequest) -> (&'static str, Color) {
-    todo!("Map commit statusCheckRollup to icon and color")
+    let state = pr
+        .commits
+        .nodes
+        .first()
+        .and_then(|n| n.commit.status_check_rollup.as_ref())
+        .and_then(|s| s.state.as_ref());
+
+    match state {
+        Some(CheckState::Success) => ("✓", Color::Green),
+        Some(CheckState::Failure | CheckState::Error) => ("✗", Color::Red),
+        Some(CheckState::Pending | CheckState::Expected) => ("◌", Color::Yellow),
+        None => ("-", Color::Gray),
+    }
 }
 
 /// Build a Line for a single PR row.
@@ -30,7 +57,46 @@ pub fn ci_status(pr: &PullRequest) -> (&'static str, Color) {
 ///
 /// See: src/components/PRRow.tsx — PRRow()
 pub fn render_pr_row(pr: &PullRequest, is_selected: bool, width: u16) -> Line<'static> {
-    todo!("Build a styled Line with selection indicator, CI icon, title, time, author")
+    let (icon, icon_color) = ci_status(pr);
+    let time = format_relative_time(&pr.updated_at);
+    let author = &pr.author.login;
+
+    let selector = if is_selected { "> " } else { "  " };
+    let style = if is_selected {
+        Style::default().bg(Color::DarkGray)
+    } else {
+        Style::default()
+    };
+    let dim = if is_selected {
+        Style::default().bg(Color::DarkGray)
+    } else {
+        Style::default().fg(Color::Gray)
+    };
+
+    let fixed_width = 25;
+    let title_width = (width as usize).saturating_sub(fixed_width);
+    let title = truncate(&pr.title, title_width);
+
+    Line::from(vec![
+        Span::styled(selector.to_string(), style),
+        Span::styled(
+            format!("{icon} "),
+            Style::default()
+                .fg(icon_color)
+                .bg(style.bg.unwrap_or(Color::Reset)),
+        ),
+        Span::styled(title, style),
+        Span::styled(format!("{:>5}", time), dim),
+        Span::styled(format!("{:>16}", author), dim),
+    ])
+}
+
+fn truncate(s: &str, max: usize) -> String {
+    if s.len() <= max {
+        format!("{:width$}", s, width = max)
+    } else {
+        format!("{}…", &s[..max.saturating_sub(1)])
+    }
 }
 
 #[cfg(test)]

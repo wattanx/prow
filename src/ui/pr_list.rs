@@ -22,7 +22,27 @@ pub enum DisplayRow {
 ///
 /// See: src/components/PRList.tsx — buildDisplayRows()
 pub fn build_display_rows(prs: &[PullRequest]) -> Vec<DisplayRow> {
-    todo!("Group PRs by repository, insert headers and spacers")
+    let mut rows = Vec::new();
+    let mut current_repo = "";
+    let mut flat_index = 0;
+
+    for pr in prs {
+        let repo = &pr.repository.name_with_owner;
+        if repo != current_repo {
+            if !current_repo.is_empty() {
+                rows.push(DisplayRow::Spacer);
+            }
+            current_repo = repo;
+            rows.push(DisplayRow::RepoHeader(repo.clone()));
+        }
+        rows.push(DisplayRow::Pr {
+            pr: pr.clone(),
+            flat_index,
+        });
+        flat_index += 1;
+    }
+
+    rows
 }
 
 /// Calculate the visible viewport range.
@@ -33,7 +53,36 @@ pub fn get_viewport(
     selected_index: usize,
     max_visible: usize,
 ) -> (usize, usize) {
-    todo!("Calculate start/end indices for viewport scrolling with '...' indicators")
+    let selected_row = rows.iter().position(
+        |row| matches!(row, DisplayRow::Pr { flat_index, .. } if * flat_index == selected_index),
+    );
+
+    let Some(selected_row) = selected_row else {
+        return (0, rows.len().min(max_visible));
+    };
+
+    if rows.len() <= max_visible {
+        return (0, rows.len());
+    };
+
+    let content_max = max_visible.saturating_sub(2);
+    let half = content_max / 2;
+    let mut start = selected_row.saturating_sub(half);
+    let mut end = start + content_max;
+
+    if end > rows.len() {
+        end = rows.len();
+        start = end.saturating_sub(content_max);
+    }
+
+    if start == 0 {
+        end = rows.len().min(end + 1);
+    }
+    if end == rows.len() {
+        start = start.saturating_sub(1);
+    }
+
+    (start, end)
 }
 
 /// Render the PR list (or loading/empty state).
@@ -47,7 +96,71 @@ pub fn render(
     empty_message: &str,
     loading: bool,
 ) {
-    todo!("Build display rows, compute viewport, render visible rows with repo headers")
+    let max_visible = area.height as usize;
+
+    if loading && prs.is_empty() {
+        let p = Paragraph::new(Line::from(Span::styled(
+            "Loading...",
+            Style::default().fg(Color::Gray),
+        )));
+        frame.render_widget(p, area);
+        return;
+    }
+
+    if prs.is_empty() {
+        let p = Paragraph::new(Line::from(Span::styled(
+            empty_message.to_string(),
+            Style::default().fg(Color::Gray),
+        )));
+        frame.render_widget(p, area);
+        return;
+    }
+
+    let display_rows = build_display_rows(prs);
+    let (start, end) = get_viewport(&display_rows, selected_index, max_visible);
+    let visible = &display_rows[start..end];
+
+    let mut lines: Vec<Line> = Vec::new();
+
+    if start > 0 {
+        lines.push(Line::from(Span::styled(
+            "...",
+            Style::default().fg(Color::Gray),
+        )));
+    }
+
+    for row in visible {
+        match row {
+            DisplayRow::RepoHeader(repo) => {
+                lines.push(Line::from(Span::styled(
+                    repo.clone(),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                )));
+            }
+            DisplayRow::Pr { pr, flat_index } => {
+                lines.push(super::pr_row::render_pr_row(
+                    pr,
+                    *flat_index == selected_index,
+                    area.width,
+                ));
+            }
+            DisplayRow::Spacer => {
+                lines.push(Line::from(""));
+            }
+        }
+    }
+
+    if end < display_rows.len() {
+        lines.push(Line::from(Span::styled(
+            "...",
+            Style::default().fg(Color::Gray),
+        )));
+    }
+
+    let paragraph = Paragraph::new(lines);
+    frame.render_widget(paragraph, area);
 }
 
 #[cfg(test)]
