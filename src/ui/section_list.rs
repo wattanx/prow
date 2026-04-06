@@ -3,7 +3,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::Paragraph,
+    widgets::{Block, Borders, Padding, Paragraph},
 };
 
 use crate::app::SectionCounts;
@@ -33,6 +33,9 @@ pub fn render(frame: &mut Frame, area: Rect, active: SectionType, counts: &Secti
         .collect();
 
     let line = Line::from(spans);
-    let tabs = Paragraph::new(line);
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .padding(Padding::horizontal(1));
+    let tabs = Paragraph::new(line).block(block);
     frame.render_widget(tabs, area);
 }

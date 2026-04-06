@@ -5,7 +5,7 @@ pub mod section_list;
 pub mod status_bar;
 
 use ratatui::Frame;
-use ratatui::layout::{Constraint, Layout};
+use ratatui::layout::{Constraint, Layout, Rect};
 
 use crate::app::AppState;
 use crate::app::empty_message;
@@ -21,20 +21,28 @@ use crate::types::AppMode;
 /// See: src/app.tsx — return JSX (lines 157-178)
 pub fn render(frame: &mut Frame, state: &AppState) {
     let chunks = Layout::vertical([
-        Constraint::Length(1),
+        Constraint::Length(3),
         Constraint::Min(1),
-        Constraint::Length(1),
+        Constraint::Length(3),
     ])
     .split(frame.area());
 
     let counts = state.section_counts();
     section_list::render(frame, chunks[0], state.active_section, &counts);
 
+    // Left padding of 2 columns for the main area (matches TS paddingLeft={2})
+    let main_area = Rect {
+        x: chunks[1].x + 2,
+        y: chunks[1].y,
+        width: chunks[1].width.saturating_sub(2),
+        height: chunks[1].height,
+    };
+
     match state.mode {
         AppMode::Filter => {
             repo_filter::render(
                 frame,
-                chunks[1],
+                main_area,
                 &state.all_repos,
                 &state.selected_repos,
                 state.filter_cursor_index,
@@ -44,7 +52,7 @@ pub fn render(frame: &mut Frame, state: &AppState) {
             let prs = state.current_prs();
             pr_list::render(
                 frame,
-                chunks[1],
+                main_area,
                 &prs,
                 state.selected_index,
                 empty_message(state.active_section),
