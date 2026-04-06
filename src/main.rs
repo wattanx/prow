@@ -11,9 +11,20 @@ mod updater;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use events::Action;
+use tokio::sync::mpsc;
 use std::time::Duration;
 
+use crate::github::GitHubClient;
+use crate::types::PullRequest;
 use crate::types::AppMode;
+
+enum FetchResult {
+    Success {
+        created: Vec<PullRequest>,
+        review_requested: Vec<PullRequest>,
+    },
+    Error(String)
+}
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -50,11 +61,54 @@ async fn main() -> Result<()> {
 
     let config = config::load_config()?;
 
+    let (result_tx, mut result_rx) = mpsc::channel::<FetchResult>(8);
+    let (refresh_tx, mut refresh_rx) = mpsc::channel::<()>(8);
+    let poll_interval = config.poll_interval;
+
+    tokio::spawn(async move {
+        let client = github::GhCliClient::new();
+        loop {
+            let result = match tokio::try_join!(
+                client.fetch_created_prs(),
+                client.fetch_review_requested_prs()
+            ) {
+                Ok((created, review_requested)) => FetchResult::Success { created, review_requested },
+                Err(e) => FetchResult::Error(e.to_string())
+            };
+
+            if result_tx.send(result).await.is_err() {
+                break;
+            }
+
+            tokio::select! {
+                _ = tokio::time::sleep(Duration::from_secs(poll_interval)) => {},
+                _ = refresh_rx.recv() => {},
+            }
+        }
+    });
+
     let mut terminal = ratatui::init();
     let mut state = app::AppState::new(config);
 
     loop {
         terminal.draw(|frame| ui::render(frame, &state))?;
+
+        while let Ok(result) = result_rx.try_recv() {
+            match result {
+                FetchResult::Success { created, review_requested } => {
+                    state.created_prs = created;
+                    state.review_requested_prs = review_requested;
+                    state.update_repos();
+                    state.loading = false;
+                    state.error = None;
+                    state.last_updated = Some(chrono::Utc::now())
+                }
+                FetchResult::Error(msg) => {
+                    state.error = Some(msg);
+                    state.loading = false;
+                }
+            }
+        }
 
         let Some(action) = events::poll_event(Duration::from_millis(250))? else {
             continue;
@@ -128,7 +182,8 @@ async fn main() -> Result<()> {
                     }
                 }
                 Action::Refresh => {
-                    // TODO: Phase 4
+                    state.loading = true;
+                    let _ = refresh_tx.try_send(());
                 }
                 _ => {}
             },
