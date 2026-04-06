@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 /// Application actions triggered by keyboard input.
 ///
@@ -22,10 +22,7 @@ pub enum Action {
     Refresh,
 
     // -- Filter mode --
-    FilterMoveDown,
-    FilterMoveUp,
     FilterToggle,
-    FilterApply,
     FilterCancel,
 
     // -- System --
@@ -54,7 +51,7 @@ fn map_key_event(key: KeyEvent) -> Option<Action> {
         KeyCode::Enter => Some(Action::OpenInBrowser),
         KeyCode::Char('h') => Some(Action::PrevSection),
         KeyCode::Char('l') => Some(Action::NextSection),
-        KeyCode::Tab if key.modifiers.contains(KeyModifiers::SHIFT) => Some(Action::PrevSection),
+        KeyCode::BackTab => Some(Action::PrevSection),
         KeyCode::Tab => Some(Action::NextSection),
         KeyCode::Char('g') => Some(Action::GoToTop),
         KeyCode::Char('G') => Some(Action::GoToBottom),

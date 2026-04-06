@@ -7,6 +7,9 @@ use crate::{
     types::{AppConfig, AppMode, PullRequest, SectionType, SortOrder},
 };
 
+// Suppress warnings for GraphQL response fields that are part of the schema
+// but not rendered by the UI.
+
 /// Central application state.
 /// Replaces all React useState hooks from src/app.tsx.
 pub struct AppState {
@@ -27,9 +30,6 @@ pub struct AppState {
     pub all_repos: Vec<String>,
     pub selected_repos: BTreeSet<String>,
 
-    // Config
-    pub config: AppConfig,
-
     pub should_quit: bool,
 }
 
@@ -49,7 +49,6 @@ impl AppState {
             last_updated: None,
             all_repos: Vec::new(),
             selected_repos,
-            config,
             should_quit: false,
         }
     }

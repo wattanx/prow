@@ -31,6 +31,7 @@ pub enum CheckState {
 // -- GitHub GraphQL response structs --
 // See: src/types.ts
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PullRequest {
@@ -61,11 +62,13 @@ pub struct Author {
     pub login: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct Labels {
     pub nodes: Vec<Label>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct Label {
     pub name: String,

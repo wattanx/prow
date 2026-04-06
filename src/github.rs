@@ -137,6 +137,7 @@ pub struct SearchData {
     pub search: SearchResult,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SearchResult {
