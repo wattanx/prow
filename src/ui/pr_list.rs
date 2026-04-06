@@ -101,7 +101,7 @@ pub fn render(
     if loading && prs.is_empty() {
         let p = Paragraph::new(Line::from(Span::styled(
             "Loading...",
-            Style::default().fg(Color::Gray),
+            Style::default().fg(Color::DarkGray),
         )));
         frame.render_widget(p, area);
         return;
@@ -110,7 +110,7 @@ pub fn render(
     if prs.is_empty() {
         let p = Paragraph::new(Line::from(Span::styled(
             empty_message.to_string(),
-            Style::default().fg(Color::Gray),
+            Style::default().fg(Color::DarkGray),
         )));
         frame.render_widget(p, area);
         return;
@@ -125,7 +125,7 @@ pub fn render(
     if start > 0 {
         lines.push(Line::from(Span::styled(
             "...",
-            Style::default().fg(Color::Gray),
+            Style::default().fg(Color::DarkGray),
         )));
     }
 
@@ -155,7 +155,7 @@ pub fn render(
     if end < display_rows.len() {
         lines.push(Line::from(Span::styled(
             "...",
-            Style::default().fg(Color::Gray),
+            Style::default().fg(Color::DarkGray),
         )));
     }
 

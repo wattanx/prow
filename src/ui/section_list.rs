@@ -27,7 +27,7 @@ pub fn render(frame: &mut Frame, area: Rect, active: SectionType, counts: &Secti
                         .add_modifier(Modifier::BOLD | Modifier::REVERSED),
                 )
             } else {
-                Span::styled(label, Style::default().fg(Color::Gray))
+                Span::styled(label, Style::default().fg(Color::DarkGray))
             }
         })
         .collect();

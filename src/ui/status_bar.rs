@@ -60,9 +60,9 @@ pub fn render(
     let spacer = " ".repeat(spacer_width);
 
     let line = Line::from(vec![
-        Span::styled(keys.to_string(), Style::default().fg(Color::Gray)),
+        Span::styled(keys.to_string(), Style::default().fg(Color::DarkGray)),
         Span::raw(spacer),
-        Span::styled(right, Style::default().fg(Color::Gray)),
+        Span::styled(right, Style::default().fg(Color::DarkGray)),
     ]);
 
     let block = Block::default()

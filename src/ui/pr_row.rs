@@ -34,7 +34,7 @@ pub fn format_relative_time(date_str: &str) -> String {
 ///   SUCCESS  -> ("✓", Color::Green)
 ///   FAILURE/ERROR -> ("✗", Color::Red)
 ///   PENDING/EXPECTED -> ("◌", Color::Yellow)
-///   None/unknown -> ("-", Color::Gray)
+///   None/unknown -> ("-", Color::DarkGray)
 pub fn ci_status(pr: &PullRequest) -> (&'static str, Color) {
     let state = pr
         .commits
@@ -47,7 +47,7 @@ pub fn ci_status(pr: &PullRequest) -> (&'static str, Color) {
         Some(CheckState::Success) => ("✓", Color::Green),
         Some(CheckState::Failure | CheckState::Error) => ("✗", Color::Red),
         Some(CheckState::Pending | CheckState::Expected) => ("◌", Color::Yellow),
-        None => ("-", Color::Gray),
+        None => ("-", Color::DarkGray),
     }
 }
 
@@ -70,7 +70,7 @@ pub fn render_pr_row(pr: &PullRequest, is_selected: bool, width: u16) -> Line<'s
     let dim = if is_selected {
         Style::default().bg(Color::DarkGray)
     } else {
-        Style::default().fg(Color::Gray)
+        Style::default().fg(Color::DarkGray)
     };
 
     let fixed_width = 25;
