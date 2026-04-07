@@ -100,9 +100,90 @@ fn truncate(s: &str, max: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use chrono::{Duration, Utc};
 
-    // TODO: Test format_relative_time with various time differences
-    // TODO: Test ci_status with different check states
-    // TODO: Test render_pr_row produces expected spans
+    use super::*;
+    use crate::types::*;
+
+    fn make_pr_with_ci(state: Option<CheckState>) -> PullRequest {
+        PullRequest {
+            title: "t".to_string(),
+            url: "u".to_string(),
+            number: 1,
+            state: PrState::Open,
+            is_draft: false,
+            created_at: "2026-04-01T00:00:00Z".to_string(),
+            updated_at: "2026-04-01T00:00:00Z".to_string(),
+            repository: Repository {
+                name_with_owner: "o/r".to_string(),
+            },
+            author: Author {
+                login: "a".to_string(),
+            },
+            labels: Labels { nodes: vec![] },
+            review_decision: None,
+            review_requests: CountNode { total_count: 0 },
+            reviews: CountNode { total_count: 0 },
+            commits: CommitNodes {
+                nodes: vec![CommitNode {
+                    commit: CommitInfo {
+                        status_check_rollup: Some(StatusCheckRollup { state }),
+                    },
+                }],
+            },
+        }
+    }
+
+    #[test]
+    fn format_relative_time_minutes() {
+        let t = Utc::now() - Duration::minutes(5);
+        assert_eq!(format_relative_time(&t.to_rfc3339()), "5m");
+    }
+
+    #[test]
+    fn format_relative_time_hours() {
+        let t = Utc::now() - Duration::hours(3);
+        assert_eq!(format_relative_time(&t.to_rfc3339()), "3h");
+    }
+
+    #[test]
+    fn format_relative_time_days() {
+        let t = Utc::now() - Duration::days(5);
+        assert_eq!(format_relative_time(&t.to_rfc3339()), "5d");
+    }
+
+    #[test]
+    fn format_relative_time_months() {
+        let t = Utc::now() - Duration::days(60);
+        assert_eq!(format_relative_time(&t.to_rfc3339()), "2mo");
+    }
+
+    #[test]
+    fn format_relative_time_invalid_returns_dash() {
+        assert_eq!(format_relative_time("not a date"), "-");
+    }
+
+    #[test]
+    fn ci_status_success() {
+        let pr = make_pr_with_ci(Some(CheckState::Success));
+        assert_eq!(ci_status(&pr), ("✓", Color::Green));
+    }
+
+    #[test]
+    fn ci_status_failure() {
+        let pr = make_pr_with_ci(Some(CheckState::Failure));
+        assert_eq!(ci_status(&pr), ("✗", Color::Red));
+    }
+
+    #[test]
+    fn ci_status_pending() {
+        let pr = make_pr_with_ci(Some(CheckState::Pending));
+        assert_eq!(ci_status(&pr), ("◌", Color::Yellow));
+    }
+
+    #[test]
+    fn ci_status_none() {
+        let pr = make_pr_with_ci(None);
+        assert_eq!(ci_status(&pr), ("-", Color::DarkGray));
+    }
 }

@@ -155,6 +155,44 @@ pub struct PageInfo {
 
 #[cfg(test)]
 mod tests {
-    // TODO: Test JSON deserialization with sample gh output
-    // TODO: Test pagination logic
+    use super::*;
+
+    #[test]
+    fn deserialize_search_response() {
+        let json = include_str!("../benchmarks/sample-response.json");
+        let response: SearchResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.data.search.issue_count, 5);
+        assert_eq!(response.data.search.nodes.len(), 5);
+    }
+
+    #[test]
+    fn deserialize_pr_fields() {
+        let json = include_str!("../benchmarks/sample-response.json");
+        let response: SearchResponse = serde_json::from_str(json).unwrap();
+        let first = &response.data.search.nodes[0];
+        assert_eq!(first.title, "feat: add dark mode support");
+        assert_eq!(first.number, 101);
+        assert_eq!(first.repository.name_with_owner, "example/repo-a");
+        assert_eq!(first.author.login, "alice");
+    }
+
+    #[test]
+    fn deserialize_ci_states() {
+        let json = include_str!("../benchmarks/sample-response.json");
+        let response: SearchResponse = serde_json::from_str(json).unwrap();
+        let nodes = &response.data.search.nodes;
+
+        // 最後のPRは statusCheckRollup が null
+        let last = nodes.last().unwrap();
+        let rollup = last.commits.nodes[0].commit.status_check_rollup.as_ref();
+        assert!(rollup.is_none());
+    }
+
+    #[test]
+    fn deserialize_page_info() {
+        let json = include_str!("../benchmarks/sample-response.json");
+        let response: SearchResponse = serde_json::from_str(json).unwrap();
+        assert!(!response.data.search.page_info.has_next_page);
+        assert!(response.data.search.page_info.end_cursor.is_none());
+    }
 }

@@ -1,0 +1,6 @@
+---
+source: src/ui/pr_list.rs
+expression: output
+---
+owner/repo                                                                      
+> - this is an extremely long pull request title that shou…   [T]           alice

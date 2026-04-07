@@ -1,0 +1,7 @@
+---
+source: src/ui/pr_list.rs
+expression: output
+---
+owner/repo                                                                      
+> - first PR                                                  [T]           alice
+  - second PR                                                 [T]           alice

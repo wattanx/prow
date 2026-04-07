@@ -71,3 +71,51 @@ pub fn render(
     let bar = Paragraph::new(line).block(block);
     frame.render_widget(bar, area);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ratatui::{Terminal, backend::TestBackend};
+
+    fn buffer_to_string(buffer: &ratatui::buffer::Buffer) -> String {
+        let mut s = String::new();
+        for y in 0..buffer.area.height {
+            for x in 0..buffer.area.width {
+                s.push_str(buffer[(x, y)].symbol());
+            }
+            s.push('\n');
+        }
+        s
+    }
+
+    fn render_to_string(mode: AppMode, sort_order: SortOrder, loading: bool) -> String {
+        let backend = TestBackend::new(100, 3);
+        let mut terminal = Terminal::new(backend).unwrap();
+        terminal
+            .draw(|frame| {
+                render(frame, frame.area(), mode, sort_order, None, loading);
+            })
+            .unwrap();
+        buffer_to_string(terminal.backend().buffer())
+    }
+
+    #[test]
+    fn snapshot_list_mode_loading() {
+        insta::assert_snapshot!(render_to_string(AppMode::List, SortOrder::Newest, true));
+    }
+
+    #[test]
+    fn snapshot_list_mode_newest() {
+        insta::assert_snapshot!(render_to_string(AppMode::List, SortOrder::Newest, false));
+    }
+
+    #[test]
+    fn snapshot_list_mode_oldest() {
+        insta::assert_snapshot!(render_to_string(AppMode::List, SortOrder::Oldest, false));
+    }
+
+    #[test]
+    fn snapshot_filter_mode() {
+        insta::assert_snapshot!(render_to_string(AppMode::Filter, SortOrder::Newest, true));
+    }
+}

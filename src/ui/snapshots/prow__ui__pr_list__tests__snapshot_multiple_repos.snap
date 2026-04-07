@@ -1,0 +1,10 @@
+---
+source: src/ui/pr_list.rs
+expression: output
+---
+owner/a                                                                         
+  - PR in a                                                   [T]           alice
+                                                                                
+owner/b                                                                         
+> - PR in b                                                   [T]           alice
+  - another PR in b                                           [T]           alice

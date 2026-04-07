@@ -65,3 +65,76 @@ pub fn render(
     let paragraph = Paragraph::new(lines);
     frame.render_widget(paragraph, area);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ratatui::{Terminal, backend::TestBackend};
+
+    fn buffer_to_string(buffer: &ratatui::buffer::Buffer) -> String {
+        let mut s = String::new();
+        for y in 0..buffer.area.height {
+            for x in 0..buffer.area.width {
+                s.push_str(buffer[(x, y)].symbol());
+            }
+            s.push('\n');
+        }
+        s
+    }
+
+    fn render_to_string(
+        all_repos: &[String],
+        selected_repos: &BTreeSet<String>,
+        cursor_index: usize,
+    ) -> String {
+        let backend = TestBackend::new(60, 10);
+        let mut terminal = Terminal::new(backend).unwrap();
+        terminal
+            .draw(|frame| {
+                render(frame, frame.area(), all_repos, selected_repos, cursor_index);
+            })
+            .unwrap();
+        buffer_to_string(terminal.backend().buffer())
+    }
+
+    #[test]
+    fn snapshot_all_state_cursor_at_top() {
+        let repos = vec![
+            "owner/a".to_string(),
+            "owner/b".to_string(),
+            "owner/c".to_string(),
+        ];
+        let selected = BTreeSet::new();
+        insta::assert_snapshot!(render_to_string(&repos, &selected, 0));
+    }
+
+    #[test]
+    fn snapshot_partial_selection() {
+        let repos = vec![
+            "owner/a".to_string(),
+            "owner/b".to_string(),
+            "owner/c".to_string(),
+        ];
+        let mut selected = BTreeSet::new();
+        selected.insert("owner/b".to_string());
+        insta::assert_snapshot!(render_to_string(&repos, &selected, 2));
+    }
+
+    #[test]
+    fn snapshot_empty_repos() {
+        let repos: Vec<String> = vec![];
+        let selected = BTreeSet::new();
+        insta::assert_snapshot!(render_to_string(&repos, &selected, 0));
+    }
+
+    #[test]
+    fn snapshot_cursor_on_middle_repo() {
+        let repos = vec![
+            "owner/a".to_string(),
+            "owner/b".to_string(),
+            "owner/c".to_string(),
+        ];
+        let selected = BTreeSet::new();
+        insta::assert_snapshot!(render_to_string(&repos, &selected, 2));
+    }
+}

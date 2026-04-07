@@ -11,19 +11,19 @@ mod updater;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use events::Action;
-use tokio::sync::mpsc;
 use std::time::Duration;
+use tokio::sync::mpsc;
 
 use crate::github::GitHubClient;
-use crate::types::PullRequest;
 use crate::types::AppMode;
+use crate::types::PullRequest;
 
 enum FetchResult {
     Success {
         created: Vec<PullRequest>,
         review_requested: Vec<PullRequest>,
     },
-    Error(String)
+    Error(String),
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -72,8 +72,11 @@ async fn main() -> Result<()> {
                 client.fetch_created_prs(),
                 client.fetch_review_requested_prs()
             ) {
-                Ok((created, review_requested)) => FetchResult::Success { created, review_requested },
-                Err(e) => FetchResult::Error(e.to_string())
+                Ok((created, review_requested)) => FetchResult::Success {
+                    created,
+                    review_requested,
+                },
+                Err(e) => FetchResult::Error(e.to_string()),
             };
 
             if result_tx.send(result).await.is_err() {
@@ -95,7 +98,10 @@ async fn main() -> Result<()> {
 
         while let Ok(result) = result_rx.try_recv() {
             match result {
-                FetchResult::Success { created, review_requested } => {
+                FetchResult::Success {
+                    created,
+                    review_requested,
+                } => {
                     state.created_prs = created;
                     state.review_requested_prs = review_requested;
                     state.update_repos();

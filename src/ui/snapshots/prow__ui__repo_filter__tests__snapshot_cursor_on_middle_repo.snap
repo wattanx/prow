@@ -1,0 +1,10 @@
+---
+source: src/ui/repo_filter.rs
+expression: "render_to_string(&repos, &selected, 2)"
+---
+Filter by repository                                        
+                                                            
+  [x] All                                                   
+  [x] owner/a                                               
+> [x] owner/b                                               
+  [x] owner/c

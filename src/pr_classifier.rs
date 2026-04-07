@@ -44,6 +44,70 @@ pub fn classify_stale(prs: &[PullRequest]) -> Vec<PullRequest> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: Test classify_new with mock PRs at various ages
-    // TODO: Test classify_stale with mock PRs at various ages
+    use super::*;
+    use crate::{pr_classifier::classify_new, types::*};
+    use chrono::{Duration, Utc};
+
+    fn make_pr(updated_at: chrono::DateTime<Utc>, review_count: u64) -> PullRequest {
+        PullRequest {
+            title: "test".to_string(),
+            url: "https://example.com".to_string(),
+            number: 1,
+            state: PrState::Open,
+            is_draft: false,
+            created_at: updated_at.to_rfc3339(),
+            updated_at: updated_at.to_rfc3339(),
+            repository: Repository {
+                name_with_owner: "owner/repo".to_string(),
+            },
+            author: Author {
+                login: "alice".to_string(),
+            },
+            labels: Labels { nodes: vec![] },
+            review_decision: None,
+            review_requests: CountNode { total_count: 0 },
+            reviews: CountNode {
+                total_count: review_count,
+            },
+            commits: CommitNodes { nodes: vec![] },
+        }
+    }
+
+    #[test]
+    fn classify_new_includes_recent_pr_with_no_reviews() {
+        let now = Utc::now();
+        let prs = vec![
+            make_pr(now - Duration::hours(1), 0), // 1h ago, 0 reviews -> include
+            make_pr(now - Duration::hours(1), 2), // 1h ago, 2 reviews -> exclude
+            make_pr(now - Duration::hours(50), 0), // 50h ago, -> exclude (stale)
+        ];
+
+        let result = classify_new(&prs);
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn classify_new_empty_input() {
+        let result = classify_new(&[]);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn classify_stale_includes_old_prs() {
+        let now = Utc::now();
+        let prs = vec![
+            make_pr(now - Duration::hours(50), 0), // 50h → stale
+            make_pr(now - Duration::hours(1), 0),  // 1h → not stale
+            make_pr(now - Duration::hours(48), 0), // exactly 48h → stale
+        ];
+
+        let result = classify_stale(&prs);
+        assert_eq!(result.len(), 2);
+    }
+
+    #[test]
+    fn classify_stale_empty_input() {
+        let result = classify_stale(&[]);
+        assert!(result.is_empty());
+    }
 }

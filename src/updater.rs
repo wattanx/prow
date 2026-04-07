@@ -2,7 +2,7 @@ use anyhow::Result;
 use tokio::process::Command;
 
 #[derive(serde::Deserialize)]
-struct  Release {
+struct Release {
     tag_name: String,
     assets: Vec<Asset>,
 }
@@ -10,7 +10,7 @@ struct  Release {
 #[derive(serde::Deserialize)]
 struct Asset {
     name: String,
-    url: String
+    url: String,
 }
 
 const REPO: &str = "wattanx/prow";
@@ -24,8 +24,6 @@ async fn get_latest_release() -> Result<Release> {
     let release: Release = serde_json::from_str(&stdout)?;
     Ok(release)
 }
-
-
 
 /// Self-update: check latest release, download platform binary, replace executable.
 ///
@@ -44,7 +42,10 @@ pub async fn self_update() -> Result<()> {
 
     let platform = get_platform();
     let asset_name = format!("prow-{platform}");
-    let asset = release.assets.iter().find(|a| a.name == asset_name)
+    let asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == asset_name)
         .ok_or_else(|| anyhow::anyhow!("No binary found for {platform}"))?;
 
     let output = Command::new("gh")
