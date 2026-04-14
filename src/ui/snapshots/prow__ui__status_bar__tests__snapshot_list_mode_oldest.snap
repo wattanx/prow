@@ -1,0 +1,7 @@
+---
+source: src/ui/status_bar.rs
+expression: "render_to_string(AppMode::List, SortOrder::Oldest, false)"
+---
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ j/k move  h/l section  g/G top/end  ⏎ open  s sort  f filter  r refresh  q quitSort: oldest firs │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘

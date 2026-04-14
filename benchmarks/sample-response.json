@@ -1,0 +1,93 @@
+{
+  "data": {
+    "search": {
+      "issueCount": 5,
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": null
+      },
+      "nodes": [
+        {
+          "title": "feat: add dark mode support",
+          "url": "https://github.com/example/repo-a/pull/101",
+          "number": 101,
+          "state": "OPEN",
+          "isDraft": false,
+          "createdAt": "2026-04-01T10:00:00Z",
+          "updatedAt": "2026-04-02T08:00:00Z",
+          "repository": { "nameWithOwner": "example/repo-a" },
+          "author": { "login": "alice" },
+          "labels": { "nodes": [{ "name": "feature", "color": "0075ca" }] },
+          "reviewDecision": "REVIEW_REQUIRED",
+          "reviewRequests": { "totalCount": 1 },
+          "reviews": { "totalCount": 0 },
+          "commits": { "nodes": [{ "commit": { "statusCheckRollup": { "state": "SUCCESS" } } }] }
+        },
+        {
+          "title": "fix: resolve login redirect loop",
+          "url": "https://github.com/example/repo-a/pull/102",
+          "number": 102,
+          "state": "OPEN",
+          "isDraft": false,
+          "createdAt": "2026-03-28T14:00:00Z",
+          "updatedAt": "2026-03-29T09:00:00Z",
+          "repository": { "nameWithOwner": "example/repo-a" },
+          "author": { "login": "bob" },
+          "labels": { "nodes": [] },
+          "reviewDecision": null,
+          "reviewRequests": { "totalCount": 2 },
+          "reviews": { "totalCount": 1 },
+          "commits": { "nodes": [{ "commit": { "statusCheckRollup": { "state": "FAILURE" } } }] }
+        },
+        {
+          "title": "chore: bump dependencies",
+          "url": "https://github.com/example/repo-b/pull/50",
+          "number": 50,
+          "state": "OPEN",
+          "isDraft": false,
+          "createdAt": "2026-04-01T16:00:00Z",
+          "updatedAt": "2026-04-02T06:00:00Z",
+          "repository": { "nameWithOwner": "example/repo-b" },
+          "author": { "login": "charlie" },
+          "labels": { "nodes": [{ "name": "chore", "color": "e4e669" }] },
+          "reviewDecision": "APPROVED",
+          "reviewRequests": { "totalCount": 1 },
+          "reviews": { "totalCount": 2 },
+          "commits": { "nodes": [{ "commit": { "statusCheckRollup": { "state": "SUCCESS" } } }] }
+        },
+        {
+          "title": "feat: implement webhook handler",
+          "url": "https://github.com/example/repo-b/pull/51",
+          "number": 51,
+          "state": "OPEN",
+          "isDraft": true,
+          "createdAt": "2026-04-02T01:00:00Z",
+          "updatedAt": "2026-04-02T10:00:00Z",
+          "repository": { "nameWithOwner": "example/repo-b" },
+          "author": { "login": "alice" },
+          "labels": { "nodes": [] },
+          "reviewDecision": null,
+          "reviewRequests": { "totalCount": 0 },
+          "reviews": { "totalCount": 0 },
+          "commits": { "nodes": [{ "commit": { "statusCheckRollup": { "state": "PENDING" } } }] }
+        },
+        {
+          "title": "docs: update API reference",
+          "url": "https://github.com/example/repo-c/pull/200",
+          "number": 200,
+          "state": "OPEN",
+          "isDraft": false,
+          "createdAt": "2026-03-30T08:00:00Z",
+          "updatedAt": "2026-03-30T12:00:00Z",
+          "repository": { "nameWithOwner": "example/repo-c" },
+          "author": { "login": "dave" },
+          "labels": { "nodes": [{ "name": "docs", "color": "0075ca" }] },
+          "reviewDecision": null,
+          "reviewRequests": { "totalCount": 1 },
+          "reviews": { "totalCount": 0 },
+          "commits": { "nodes": [{ "commit": { "statusCheckRollup": null } }] }
+        }
+      ]
+    }
+  }
+}

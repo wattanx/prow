@@ -1,0 +1,14 @@
+---
+source: src/ui/pr_list.rs
+expression: output
+---
+owner/repo-0                                                                    
+> - title                                                     [T]           alice
+                                                                                
+owner/repo-1                                                                    
+  - title                                                     [T]           alice
+                                                                                
+owner/repo-2                                                                    
+  - title                                                     [T]           alice
+                                                                                
+...
