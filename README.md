@@ -116,10 +116,13 @@ Configuration is stored at `~/.config/prow/config.json` (auto-created on first l
 
 ## Tech Stack
 
-- [Ink](https://github.com/vadimdemedes/ink) - React for CLI
+- [Ratatui](https://ratatui.rs/) - Rust TUI framework
+- [Crossterm](https://github.com/crossterm-rs/crossterm) - Terminal backend
+- [Tokio](https://tokio.rs/) - Async runtime
+- [Clap](https://github.com/clap-rs/clap) - CLI argument parser
 - [GitHub CLI](https://cli.github.com/) - GitHub API via `gh api graphql`
-- [Conf](https://github.com/sindresorhus/conf) - Configuration management
-- [Bun](https://bun.sh/) - Build & runtime
+
+> The original TypeScript/Ink implementation is preserved under [`legacy/`](./legacy) for reference.
 
 ## License
 
