@@ -91,11 +91,47 @@ pub fn render_pr_row(pr: &PullRequest, is_selected: bool, width: u16) -> Line<'s
 }
 
 fn truncate(s: &str, max: usize) -> String {
-    if s.len() <= max {
-        format!("{:width$}", s, width = max)
-    } else {
-        format!("{}…", &s[..max.saturating_sub(1)])
+    if max == 0 {
+        return String::new();
     }
+
+    let width = display_width(s);
+    if width <= max {
+        return pad_to_width(s.to_string(), width, max);
+    }
+
+    let ellipsis = "…";
+    let ellipsis_width = display_width(ellipsis);
+    let content_width = max.saturating_sub(ellipsis_width);
+    let mut out = String::new();
+    let mut used_width = 0;
+
+    for ch in s.chars() {
+        let mut buf = [0; 4];
+        let char_width = display_width(ch.encode_utf8(&mut buf));
+        if used_width + char_width > content_width {
+            break;
+        }
+
+        out.push(ch);
+        used_width += char_width;
+    }
+
+    out.push_str(ellipsis);
+    used_width += ellipsis_width;
+
+    pad_to_width(out, used_width, max)
+}
+
+fn display_width(s: &str) -> usize {
+    Span::raw(s).width()
+}
+
+fn pad_to_width(mut s: String, width: usize, max: usize) -> String {
+    if width < max {
+        s.push_str(&" ".repeat(max - width));
+    }
+    s
 }
 
 #[cfg(test)]
@@ -185,5 +221,32 @@ mod tests {
     fn ci_status_none() {
         let pr = make_pr_with_ci(None);
         assert_eq!(ci_status(&pr), ("-", Color::DarkGray));
+    }
+
+    #[test]
+    fn truncate_ascii_title() {
+        assert_eq!(truncate("abcdef", 4), "abc…");
+    }
+
+    #[test]
+    fn truncate_multibyte_title_on_char_boundary() {
+        let truncated = truncate("日本語の長いタイトルでも文字の途中で切れないようにする", 44);
+
+        assert_eq!(truncated, "日本語の長いタイトルでも文字の途中で切れな… ");
+        assert_eq!(display_width(&truncated), 44);
+    }
+
+    #[test]
+    fn truncate_pads_short_multibyte_title_to_display_width() {
+        assert_eq!(truncate("店舗", 6), "店舗  ");
+    }
+
+    #[test]
+    fn truncate_does_not_cut_multibyte_title_when_display_width_fits() {
+        let title = "日本語の長いタイトルでも文字の途中で切れないようにする";
+        let truncated = truncate(title, 132);
+
+        assert_eq!(truncated.trim_end(), title);
+        assert_eq!(display_width(&truncated), 132);
     }
 }
